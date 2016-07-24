@@ -14,13 +14,13 @@ func main() {
 }
 
 func run(username, password string) error {
-	c, err := arangogo.NewConnection(&arangogo.Config{Username: username, Password: password})
+	d, err := arangogo.NewDatabase(&arangogo.Config{Username: username, Password: password})
 	if err != nil {
 		return err
 	}
 
 	name := "foo"
-	err = c.CreateDatabase(name, []interface{}{
+	err = d.CreateDatabase(name, []interface{}{
 		map[string]interface{}{
 			"username": "root",
 		},
@@ -29,18 +29,18 @@ func run(username, password string) error {
 		return err
 	}
 
-	databases, err := c.ListDatabases()
+	databases, err := d.ListDatabases()
 	if err != nil {
 		return err
 	}
 	log.Printf("databases=%v", databases)
 
-	err = c.DropDatabase(name)
+	err = d.DropDatabase(name)
 	if err != nil {
 		return err
 	}
 
-	userDatabases, err := c.ListUserDatabases()
+	userDatabases, err := d.ListUserDatabases()
 	if err != nil {
 		return err
 	}
