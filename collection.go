@@ -38,7 +38,21 @@ func (c *Connection) CreateCollection(config CreateCollectionConfig) error {
 	return nil
 }
 
-func (c *Connection) ListCollections(excludeSystem bool) ([]Collection, error) {
+func (c *Connection) DeleteCollection(name string) error {
+	body := new(struct {
+		Error bool `json:"error"`
+	})
+	resp, err := c.send("DELETE", "/_api/collection/"+name, nil, body)
+	if err != nil {
+		return fmt.Errorf("failed to delete collection: %v", err)
+	}
+	if body.Error {
+		return fmt.Errorf("error in delete collection response:%s", string(resp.body))
+	}
+	return nil
+}
+
+func (c *Connection) ListCollections() ([]Collection, error) {
 	body := new(struct {
 		Result []Collection `json:"result"`
 		Error  bool         `json:"error"`
@@ -50,17 +64,7 @@ func (c *Connection) ListCollections(excludeSystem bool) ([]Collection, error) {
 	if body.Error {
 		return nil, fmt.Errorf("error in collection list response:%s", string(resp.body))
 	}
-	var collections []Collection
-	if excludeSystem {
-		for _, c := range body.Result {
-			if !c.IsSystem {
-				collections = append(collections, c)
-			}
-		}
-	} else {
-		collections = body.Result
-	}
-	return collections, nil
+	return body.Result, nil
 }
 
 func (c *Connection) TruncateCollection(name string) error {

@@ -51,7 +51,7 @@ func run(username, password string) error {
 		return err
 	}
 
-	collections, err := c.ListCollections(false)
+	collections, err := c.ListCollections()
 	if err != nil {
 		return err
 	}
@@ -60,6 +60,11 @@ func run(username, password string) error {
 	}
 
 	err = c.TruncateCollection("mycollection")
+	if err != nil {
+		return err
+	}
+
+	err = c.DeleteCollection("mycollection")
 	if err != nil {
 		return err
 	}
