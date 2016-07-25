@@ -111,3 +111,28 @@ func (d *Database) ListUserDatabases() ([]string, error) {
 	}
 	return body.Result, nil
 }
+
+func (d *Database) ListCollections(excludeSystem bool) ([]Collection, error) {
+	body := new(struct {
+		Result []Collection `json:"result"`
+		Error  bool         `json:"error"`
+	})
+	resp, err := d.conn.send("GET", "/_api/collection", nil, body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get collection list: %v", err)
+	}
+	if body.Error {
+		return nil, fmt.Errorf("error in collection list response:%s", string(resp.body))
+	}
+	var collections []Collection
+	if excludeSystem {
+		for _, c := range body.Result {
+			if !c.IsSystem {
+				collections = append(collections, c)
+			}
+		}
+	} else {
+		collections = body.Result
+	}
+	return collections, nil
+}

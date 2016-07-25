@@ -45,5 +45,14 @@ func run(username, password string) error {
 		return err
 	}
 	log.Printf("userDatabases=%v", userDatabases)
+
+	collections, err := d.ListCollections(false)
+	if err != nil {
+		return err
+	}
+	for _, c := range collections {
+		log.Printf("collection=%v", c)
+	}
+
 	return nil
 }
