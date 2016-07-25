@@ -2,19 +2,6 @@ package arangogo
 
 import "fmt"
 
-type DB struct {
-	name string
-	conn *Connection
-}
-
-func (c *Connection) DB(name string) *DB {
-	return &DB{name: name, conn: c}
-}
-
-func (c *Connection) SystemDB() *DB {
-	return c.DB(defaultDatabaseName)
-}
-
 func (c *Connection) CreateDatabase(name string, users []interface{}) error {
 	payload := struct {
 		Name  string        `json:"name"`

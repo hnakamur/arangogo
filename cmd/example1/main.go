@@ -19,8 +19,8 @@ func run(username, password string) error {
 		return err
 	}
 
-	name := "foo"
-	err = c.CreateDatabase(name, []interface{}{
+	dbName := "foo"
+	err = c.CreateDatabase(dbName, []interface{}{
 		map[string]interface{}{
 			"username": "root",
 		},
@@ -35,12 +35,12 @@ func run(username, password string) error {
 	}
 	log.Printf("databases=%v", databases)
 
-	err = c.DB(name).CreateCollection(ara.CreateCollectionConfig{Name: "mycollection"})
+	err = c.CreateCollection(dbName, ara.CreateCollectionConfig{Name: "mycollection"})
 	if err != nil {
 		return err
 	}
 
-	collections, err := c.DB(name).ListCollections()
+	collections, err := c.ListCollections(dbName)
 	if err != nil {
 		return err
 	}
@@ -48,17 +48,17 @@ func run(username, password string) error {
 		log.Printf("collection=%v", c)
 	}
 
-	err = c.DB(name).TruncateCollection("mycollection")
+	err = c.TruncateCollection(dbName, "mycollection")
 	if err != nil {
 		return err
 	}
 
-	err = c.DB(name).DeleteCollection("mycollection")
+	err = c.DeleteCollection(dbName, "mycollection")
 	if err != nil {
 		return err
 	}
 
-	err = c.DropDatabase(name)
+	err = c.DropDatabase(dbName)
 	if err != nil {
 		return err
 	}
