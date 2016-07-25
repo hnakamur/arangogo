@@ -19,7 +19,7 @@ type Config struct {
 	Header        http.Header
 }
 
-type connection struct {
+type Connection struct {
 	client        *http.Client
 	url           string
 	name          string
@@ -35,8 +35,8 @@ const (
 	defaultArangoVesion = 30000
 )
 
-func newConnection(config *Config) (*connection, error) {
-	d := &connection{
+func NewConnection(config *Config) (*Connection, error) {
+	c := &Connection{
 		client:        new(http.Client),
 		url:           defaultURL,
 		name:          defaultDatabaseName,
@@ -48,25 +48,25 @@ func newConnection(config *Config) (*connection, error) {
 			if err != nil {
 				return nil, err
 			}
-			d.url = config.URL
+			c.url = config.URL
 		}
 		if config.DatabaseName != "" {
-			d.name = config.DatabaseName
+			c.name = config.DatabaseName
 		}
 		if config.ArangoVersion != 0 {
-			d.arangoVersion = config.ArangoVersion
+			c.arangoVersion = config.ArangoVersion
 		}
 		if config.Username != "" {
-			d.username = config.Username
+			c.username = config.Username
 		}
 		if config.Password != "" {
-			d.password = config.Password
+			c.password = config.Password
 		}
 		if config.Header != nil {
-			d.header = config.Header
+			c.header = config.Header
 		}
 	}
-	return d, nil
+	return c, nil
 }
 
 type HTTPError struct {
@@ -74,7 +74,7 @@ type HTTPError struct {
 	StatusCode int
 }
 
-func (c *connection) send(method, path string, payload, respBody interface{}) (*response, error) {
+func (c *Connection) send(method, path string, payload, respBody interface{}) (*response, error) {
 	var reader io.Reader
 	if payload != nil {
 		b, err := json.Marshal(payload)
