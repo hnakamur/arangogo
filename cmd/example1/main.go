@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	"github.com/hnakamur/arangogo"
+	ara "github.com/hnakamur/arangogo"
 )
 
 func main() {
@@ -14,7 +14,7 @@ func main() {
 }
 
 func run(username, password string) error {
-	c, err := arangogo.NewConnection(&arangogo.Config{Username: username, Password: password})
+	c, err := ara.NewConnection(&ara.Config{Username: username, Password: password})
 	if err != nil {
 		return err
 	}
@@ -46,12 +46,22 @@ func run(username, password string) error {
 	}
 	log.Printf("userDatabases=%v", userDatabases)
 
+	err = c.CreateCollection(ara.CreateCollectionConfig{Name: "mycollection"})
+	if err != nil {
+		return err
+	}
+
 	collections, err := c.ListCollections(false)
 	if err != nil {
 		return err
 	}
 	for _, c := range collections {
 		log.Printf("collection=%v", c)
+	}
+
+	err = c.TruncateCollection("mycollection")
+	if err != nil {
+		return err
 	}
 
 	return nil
