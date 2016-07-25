@@ -133,11 +133,3 @@ type response struct {
 	rawResponse *http.Response
 	body        []byte
 }
-
-func (r *response) Status() string {
-	return r.rawResponse.Status
-}
-
-func (r *response) StatusCode() int {
-	return r.rawResponse.StatusCode
-}
