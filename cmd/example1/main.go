@@ -35,6 +35,29 @@ func run(username, password string) error {
 	}
 	log.Printf("databases=%v", databases)
 
+	err = c.DB(name).CreateCollection(ara.CreateCollectionConfig{Name: "mycollection"})
+	if err != nil {
+		return err
+	}
+
+	collections, err := c.DB(name).ListCollections()
+	if err != nil {
+		return err
+	}
+	for _, c := range collections {
+		log.Printf("collection=%v", c)
+	}
+
+	err = c.DB(name).TruncateCollection("mycollection")
+	if err != nil {
+		return err
+	}
+
+	err = c.DB(name).DeleteCollection("mycollection")
+	if err != nil {
+		return err
+	}
+
 	err = c.DropDatabase(name)
 	if err != nil {
 		return err
@@ -45,29 +68,6 @@ func run(username, password string) error {
 		return err
 	}
 	log.Printf("userDatabases=%v", userDatabases)
-
-	err = c.CreateCollection(ara.CreateCollectionConfig{Name: "mycollection"})
-	if err != nil {
-		return err
-	}
-
-	collections, err := c.ListCollections()
-	if err != nil {
-		return err
-	}
-	for _, c := range collections {
-		log.Printf("collection=%v", c)
-	}
-
-	err = c.TruncateCollection("mycollection")
-	if err != nil {
-		return err
-	}
-
-	err = c.DeleteCollection("mycollection")
-	if err != nil {
-		return err
-	}
 
 	return nil
 }

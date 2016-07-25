@@ -24,11 +24,11 @@ type CreateCollectionConfig struct {
 	IndexBuckets   int                    `json:"indexBuckets,omitempty"`
 }
 
-func (c *Connection) CreateCollection(config CreateCollectionConfig) error {
+func (d *DB) CreateCollection(config CreateCollectionConfig) error {
 	body := new(struct {
 		Error bool `json:"error"`
 	})
-	resp, err := c.send("POST", "/_api/collection", config, body)
+	resp, err := d.conn.send("POST", "/_db/"+d.name+"/_api/collection", config, body)
 	if err != nil {
 		return fmt.Errorf("failed to create collection: %v", err)
 	}
@@ -38,11 +38,11 @@ func (c *Connection) CreateCollection(config CreateCollectionConfig) error {
 	return nil
 }
 
-func (c *Connection) DeleteCollection(name string) error {
+func (d *DB) DeleteCollection(name string) error {
 	body := new(struct {
 		Error bool `json:"error"`
 	})
-	resp, err := c.send("DELETE", "/_api/collection/"+name, nil, body)
+	resp, err := d.conn.send("DELETE", "/_db/"+d.name+"/_api/collection/"+name, nil, body)
 	if err != nil {
 		return fmt.Errorf("failed to delete collection: %v", err)
 	}
@@ -52,12 +52,12 @@ func (c *Connection) DeleteCollection(name string) error {
 	return nil
 }
 
-func (c *Connection) ListCollections() ([]Collection, error) {
+func (d *DB) ListCollections() ([]Collection, error) {
 	body := new(struct {
 		Result []Collection `json:"result"`
 		Error  bool         `json:"error"`
 	})
-	resp, err := c.send("GET", "/_api/collection", nil, body)
+	resp, err := d.conn.send("GET", "/_db/"+d.name+"/_api/collection", nil, body)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get collection list: %v", err)
 	}
@@ -67,11 +67,11 @@ func (c *Connection) ListCollections() ([]Collection, error) {
 	return body.Result, nil
 }
 
-func (c *Connection) TruncateCollection(name string) error {
+func (d *DB) TruncateCollection(name string) error {
 	body := new(struct {
 		Error bool `json:"error"`
 	})
-	resp, err := c.send("PUT", "/_api/collection/"+name+"/truncate", nil, body)
+	resp, err := d.conn.send("PUT", "/_db/"+d.name+"/_api/collection/"+name+"/truncate", nil, body)
 	if err != nil {
 		return fmt.Errorf("failed to truncate collection: %v", err)
 	}
