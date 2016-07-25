@@ -35,6 +35,8 @@ const (
 	defaultArangoVesion = 30000
 )
 
+const SystemDatabaseName = "_system"
+
 func NewConnection(config *Config) (*Connection, error) {
 	c := &Connection{
 		client:        new(http.Client),

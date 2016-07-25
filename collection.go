@@ -24,11 +24,19 @@ type CreateCollectionConfig struct {
 	IndexBuckets   int                    `json:"indexBuckets,omitempty"`
 }
 
+func dbPrefix(name string) string {
+	if name == SystemDatabaseName {
+		return ""
+	} else {
+		return "/_db/" + name
+	}
+}
+
 func (d *DB) CreateCollection(config CreateCollectionConfig) error {
 	body := new(struct {
 		Error bool `json:"error"`
 	})
-	resp, err := d.conn.send("POST", "/_db/"+d.name+"/_api/collection", config, body)
+	resp, err := d.conn.send("POST", dbPrefix(d.name)+"/_api/collection", config, body)
 	if err != nil {
 		return fmt.Errorf("failed to create collection: %v", err)
 	}
@@ -42,7 +50,7 @@ func (d *DB) DeleteCollection(name string) error {
 	body := new(struct {
 		Error bool `json:"error"`
 	})
-	resp, err := d.conn.send("DELETE", "/_db/"+d.name+"/_api/collection/"+name, nil, body)
+	resp, err := d.conn.send("DELETE", dbPrefix(d.name)+"/_api/collection/"+name, nil, body)
 	if err != nil {
 		return fmt.Errorf("failed to delete collection: %v", err)
 	}
@@ -57,7 +65,7 @@ func (d *DB) ListCollections() ([]Collection, error) {
 		Result []Collection `json:"result"`
 		Error  bool         `json:"error"`
 	})
-	resp, err := d.conn.send("GET", "/_db/"+d.name+"/_api/collection", nil, body)
+	resp, err := d.conn.send("GET", dbPrefix(d.name)+"/_api/collection", nil, body)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get collection list: %v", err)
 	}
@@ -71,7 +79,7 @@ func (d *DB) TruncateCollection(name string) error {
 	body := new(struct {
 		Error bool `json:"error"`
 	})
-	resp, err := d.conn.send("PUT", "/_db/"+d.name+"/_api/collection/"+name+"/truncate", nil, body)
+	resp, err := d.conn.send("PUT", dbPrefix(d.name)+"/_api/collection/"+name+"/truncate", nil, body)
 	if err != nil {
 		return fmt.Errorf("failed to truncate collection: %v", err)
 	}
