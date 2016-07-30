@@ -25,7 +25,7 @@ type CreateCollectionConfig struct {
 }
 
 func dbPrefix(name string) string {
-	if name == SystemDatabaseName {
+	if name == SystemDatabaseName || name == "" {
 		return ""
 	} else {
 		return "/_db/" + name

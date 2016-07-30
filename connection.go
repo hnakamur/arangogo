@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 )
@@ -106,6 +107,13 @@ func (c *Connection) send(method, path string, payload, respBody interface{}) (*
 	b, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read response body: %v", err)
+	}
+	if true {
+		body := ""
+		if b != nil {
+			body = string(b)
+		}
+		log.Printf("Connection send. method=%s, url=%s, status=%s, resBody=%s", method, url, resp.Status, body)
 	}
 	if b != nil && respBody != nil {
 		err = json.Unmarshal(b, respBody)

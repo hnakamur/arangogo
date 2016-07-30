@@ -13,21 +13,17 @@ func main() {
 	}
 }
 
-func run(username, password string) error {
-	c, err := ara.NewConnection(&ara.Config{Username: username, Password: password})
-	if err != nil {
-		return err
+func contains(array []string, elem string) bool {
+	for _, item := range array {
+		if item == elem {
+			return true
+		}
 	}
+	return false
+}
 
-	dbName := "foo"
-	err = c.CreateDatabase(ara.CreateDatabaseConfig{
-		Name: dbName,
-		Users: []map[string]interface{}{
-			map[string]interface{}{
-				"username": "root",
-			},
-		},
-	})
+func run(username, password string) (err error) {
+	c, err := ara.NewConnection(&ara.Config{Username: username, Password: password})
 	if err != nil {
 		return err
 	}
@@ -38,7 +34,36 @@ func run(username, password string) error {
 	}
 	log.Printf("databases=%v", databases)
 
-	err = c.CreateCollection(dbName, ara.CreateCollectionConfig{Name: "mycollection"})
+	dbName := "foo"
+	if !contains(databases, dbName) {
+		err = c.CreateDatabase(ara.CreateDatabaseConfig{
+			Name: dbName,
+			Users: []map[string]interface{}{
+				map[string]interface{}{
+					"username": "root",
+				},
+			},
+		})
+		if err != nil {
+			return err
+		}
+	}
+	defer func() {
+		err = c.DropDatabase(dbName)
+		if err != nil {
+			return
+		}
+
+		var userDatabases []string
+		userDatabases, err = c.ListUserDatabases()
+		if err != nil {
+			return
+		}
+		log.Printf("userDatabases=%v", userDatabases)
+	}()
+
+	collName := "mycollection"
+	err = c.CreateCollection(dbName, ara.CreateCollectionConfig{Name: collName})
 	if err != nil {
 		return err
 	}
@@ -51,26 +76,35 @@ func run(username, password string) error {
 		log.Printf("collection=%v", c)
 	}
 
-	err = c.TruncateCollection(dbName, "mycollection")
+	data := map[string]interface{}{
+		"name": "Alice",
+	}
+	doc, err := c.CreateDocument(dbName, collName, data, nil)
+	if err != nil {
+		return err
+	}
+	log.Printf("created document=%v", *doc)
+
+	data2 := []map[string]interface{}{
+		{"name": "Alice"},
+		{"name": "Bob"},
+		{"name": "Charlie"},
+	}
+	docs, err := c.CreateDocuments(dbName, collName, data2, nil)
+	if err != nil {
+		return err
+	}
+	log.Printf("created documents=%v", docs)
+
+	err = c.TruncateCollection(dbName, collName)
 	if err != nil {
 		return err
 	}
 
-	err = c.DeleteCollection(dbName, "mycollection")
+	err = c.DeleteCollection(dbName, collName)
 	if err != nil {
 		return err
 	}
-
-	err = c.DropDatabase(dbName)
-	if err != nil {
-		return err
-	}
-
-	userDatabases, err := c.ListUserDatabases()
-	if err != nil {
-		return err
-	}
-	log.Printf("userDatabases=%v", userDatabases)
 
 	return nil
 }
