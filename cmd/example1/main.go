@@ -90,8 +90,11 @@ func run(username, password string) (err error) {
 		{"name": "Bob"},
 		{"name": "Charlie"},
 	}
+	//data2 := `{1:"Foo"},{2:"Bad"}`
+	//data2 := `[{"name":"Foo"},{"name":"Bar"}]`
 	docs, err := c.CreateDocuments(dbName, collName, data2, nil)
 	if err != nil {
+		log.Printf("err=%v", err)
 		return err
 	}
 	log.Printf("created documents=%v", docs)

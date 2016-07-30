@@ -33,29 +33,17 @@ func dbPrefix(name string) string {
 }
 
 func (c *Connection) CreateCollection(dbName string, config CreateCollectionConfig) error {
-	body := new(struct {
-		Error bool `json:"error"`
-	})
-	resp, err := c.send("POST", dbPrefix(dbName)+"/_api/collection", config, body)
+	_, err := c.send("POST", dbPrefix(dbName)+"/_api/collection", config, nil)
 	if err != nil {
 		return fmt.Errorf("failed to create collection: %v", err)
-	}
-	if body.Error {
-		return fmt.Errorf("error in create collection response:%s", string(resp.body))
 	}
 	return nil
 }
 
 func (c *Connection) DeleteCollection(dbName string, name string) error {
-	body := new(struct {
-		Error bool `json:"error"`
-	})
-	resp, err := c.send("DELETE", dbPrefix(dbName)+"/_api/collection/"+name, nil, body)
+	_, err := c.send("DELETE", dbPrefix(dbName)+"/_api/collection/"+name, nil, nil)
 	if err != nil {
 		return fmt.Errorf("failed to delete collection: %v", err)
-	}
-	if body.Error {
-		return fmt.Errorf("error in delete collection response:%s", string(resp.body))
 	}
 	return nil
 }
@@ -63,28 +51,18 @@ func (c *Connection) DeleteCollection(dbName string, name string) error {
 func (c *Connection) ListCollections(dbName string) ([]Collection, error) {
 	body := new(struct {
 		Result []Collection `json:"result"`
-		Error  bool         `json:"error"`
 	})
-	resp, err := c.send("GET", dbPrefix(dbName)+"/_api/collection", nil, body)
+	_, err := c.send("GET", dbPrefix(dbName)+"/_api/collection", nil, body)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get collection list: %v", err)
-	}
-	if body.Error {
-		return nil, fmt.Errorf("error in collection list response:%s", string(resp.body))
 	}
 	return body.Result, nil
 }
 
 func (c *Connection) TruncateCollection(dbName string, name string) error {
-	body := new(struct {
-		Error bool `json:"error"`
-	})
-	resp, err := c.send("PUT", dbPrefix(dbName)+"/_api/collection/"+name+"/truncate", nil, body)
+	_, err := c.send("PUT", dbPrefix(dbName)+"/_api/collection/"+name+"/truncate", nil, nil)
 	if err != nil {
 		return fmt.Errorf("failed to truncate collection: %v", err)
-	}
-	if body.Error {
-		return fmt.Errorf("error in truncate collection response:%s", string(resp.body))
 	}
 	return nil
 }

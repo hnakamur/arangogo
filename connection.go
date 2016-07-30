@@ -79,12 +79,14 @@ type HTTPError struct {
 
 func (c *Connection) send(method, path string, payload, respBody interface{}) (*response, error) {
 	var reader io.Reader
+	var payloadBytes []byte
 	if payload != nil {
-		b, err := json.Marshal(payload)
+		var err error
+		payloadBytes, err = json.Marshal(payload)
 		if err != nil {
 			return nil, fmt.Errorf("failed to encode request payload: %v", err)
 		}
-		reader = bytes.NewBuffer(b)
+		reader = bytes.NewBuffer(payloadBytes)
 	}
 	url := c.url + path
 	req, err := http.NewRequest(method, url, reader)
@@ -109,22 +111,37 @@ func (c *Connection) send(method, path string, payload, respBody interface{}) (*
 		return nil, fmt.Errorf("failed to read response body: %v", err)
 	}
 	if true {
-		body := ""
-		if b != nil {
-			body = string(b)
+		var payloadStr string
+		if len(payloadBytes) > 0 {
+			payloadStr = string(payloadBytes)
 		}
-		log.Printf("Connection send. method=%s, url=%s, status=%s, resBody=%s", method, url, resp.Status, body)
+
+		var bodyStr string
+		if len(b) > 0 {
+			bodyStr = string(b)
+		}
+		log.Printf("Connection send. method=%s, url=%s, payload=%s, status=%s, resBody=%s", method, url, payloadStr, resp.Status, bodyStr)
 	}
-	if b != nil && respBody != nil {
-		err = json.Unmarshal(b, respBody)
-		if err != nil {
-			return nil, fmt.Errorf("failed to decode response body: %v", err)
+	if len(b) > 0 {
+		errBody := new(struct {
+			Error bool `json:"error"`
+		})
+		err2 := json.Unmarshal(b, errBody)
+		if err2 == nil && errBody.Error {
+			return nil, fmt.Errorf("error returned from ArangoDB API: status=%s, body=%s", resp.Status, string(b))
+		}
+
+		if respBody != nil {
+			err = json.Unmarshal(b, respBody)
+			if err != nil {
+				return nil, fmt.Errorf("failed to decode response body: %v", err)
+			}
 		}
 	}
 	s := resp.StatusCode
 	if s >= http.StatusBadRequest {
 		var bodyStr string
-		if b != nil {
+		if len(b) > 0 {
 			bodyStr = string(b)
 		}
 		return nil, HTTPError{
