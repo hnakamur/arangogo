@@ -20,9 +20,12 @@ func run(username, password string) error {
 	}
 
 	dbName := "foo"
-	err = c.CreateDatabase(dbName, []interface{}{
-		map[string]interface{}{
-			"username": "root",
+	err = c.CreateDatabase(ara.CreateDatabaseConfig{
+		Name: dbName,
+		Users: []map[string]interface{}{
+			map[string]interface{}{
+				"username": "root",
+			},
 		},
 	})
 	if err != nil {

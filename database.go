@@ -1,22 +1,25 @@
 package arangogo
 
-import "fmt"
+import (
+	"encoding/json"
+	"fmt"
+)
 
-func (c *Connection) CreateDatabase(name string, users []interface{}) error {
-	payload := struct {
-		Name  string        `json:"name"`
-		Users []interface{} `json:"users"`
-	}{
-		Name: name,
-	}
-	if len(users) > 0 {
-		payload.Users = users
-	}
+type CreateDatabaseConfig struct {
+	Username string                   `json:"username,omitempty"`
+	Name     string                   `json:"name"`
+	Extra    json.RawMessage          `json:"extra,omitempty"`
+	Passwd   string                   `json:"passwd,omitempty"`
+	Active   *bool                    `json:"active,omitempty"`
+	Users    []map[string]interface{} `json:"users,omitempty"`
+}
+
+func (c *Connection) CreateDatabase(config CreateDatabaseConfig) error {
 	body := new(struct {
 		Error bool `json:"error"`
 		Code  int  `json:"code"`
 	})
-	resp, err := c.send("POST", "/_api/database", payload, body)
+	resp, err := c.send("POST", "/_api/database", config, body)
 	if err != nil {
 		return fmt.Errorf("failed to create database: %v", err)
 	}
