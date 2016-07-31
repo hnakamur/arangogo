@@ -77,7 +77,7 @@ type HTTPError struct {
 	StatusCode int
 }
 
-func (c *Connection) send(method, path string, payload, respBody interface{}) (*response, error) {
+func (c *Connection) send(method, path string, header http.Header, payload, respBody interface{}) (*response, error) {
 	var reader io.Reader
 	var payloadBytes []byte
 	if payload != nil {
@@ -96,6 +96,17 @@ func (c *Connection) send(method, path string, payload, respBody interface{}) (*
 	if c.header != nil {
 		req.Header = c.header
 	}
+	if header != nil {
+		if req.Header == nil {
+			req.Header = header
+		} else {
+			for k, vv := range header {
+				for _, v := range vv {
+					req.Header.Add(k, v)
+				}
+			}
+		}
+	}
 	if c.username != "" && c.password != "" {
 		req.SetBasicAuth(c.username, c.password)
 	}
@@ -111,16 +122,28 @@ func (c *Connection) send(method, path string, payload, respBody interface{}) (*
 		return nil, fmt.Errorf("failed to read response body: %v", err)
 	}
 	if true {
+		var reqH []byte
+		for k, vv := range req.Header {
+			for _, v := range vv {
+				reqH = append(reqH, ", "+k+"="+v...)
+			}
+		}
 		var payloadStr string
 		if len(payloadBytes) > 0 {
 			payloadStr = string(payloadBytes)
 		}
 
+		var respH []byte
+		for k, vv := range resp.Header {
+			for _, v := range vv {
+				respH = append(respH, ", "+k+"="+v...)
+			}
+		}
 		var bodyStr string
 		if len(b) > 0 {
 			bodyStr = string(b)
 		}
-		log.Printf("Connection send. method=%s, url=%s, payload=%s, status=%s, resBody=%s", method, url, payloadStr, resp.Status, bodyStr)
+		log.Printf("Connection send. method=%s, url=%s%s, payload=%s, status=%s%s, resBody=%s", method, url, string(reqH), payloadStr, resp.Status, respH, bodyStr)
 	}
 	if len(b) > 0 {
 		errBody := new(struct {

@@ -2,6 +2,7 @@ package arangogo
 
 import (
 	"fmt"
+	"net/http"
 	"net/url"
 	"strconv"
 )
@@ -32,7 +33,7 @@ func (c *Connection) CreateDocument(dbName, collName string, data interface{}, c
 	if len(v) > 0 {
 		u = u + "?" + v.Encode()
 	}
-	_, err := c.send("POST", u, data, body)
+	_, err := c.send("POST", u, nil, data, body)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create document: %v", err)
 	}
@@ -54,7 +55,7 @@ func (c *Connection) CreateDocuments(dbName, collName string, data interface{}, 
 	if len(v) > 0 {
 		u = u + "?" + v.Encode()
 	}
-	_, err := c.send("POST", u, data, &body)
+	_, err := c.send("POST", u, nil, data, &body)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create documents: %v", err)
 	}
@@ -70,6 +71,7 @@ type DeleteDocumentConfig struct {
 func (c *Connection) DeleteDocument(dbName, collName, key string, config *DeleteDocumentConfig) error {
 	u := dbPrefix(dbName) + "/_api/document/" + collName + "/" + key
 	v := url.Values{}
+	var header http.Header
 	if config != nil {
 		if config.WaitForSync != nil {
 			v.Set("waitForSync", strconv.FormatBool(*config.WaitForSync))
@@ -77,11 +79,15 @@ func (c *Connection) DeleteDocument(dbName, collName, key string, config *Delete
 		if config.ReturnOld != nil {
 			v.Set("returnOld", strconv.FormatBool(*config.ReturnOld))
 		}
+		if config.IfMatch != "" {
+			header = make(http.Header)
+			header.Set("if-match", config.IfMatch)
+		}
 	}
 	if len(v) > 0 {
 		u = u + "?" + v.Encode()
 	}
-	_, err := c.send("DELETE", u, nil, nil)
+	_, err := c.send("DELETE", u, header, nil, nil)
 	if err != nil {
 		return fmt.Errorf("failed to delete document: %v", err)
 	}

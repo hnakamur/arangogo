@@ -99,7 +99,7 @@ func run(username, password string) (err error) {
 	}
 	log.Printf("created documents=%v", docs)
 
-	err = c.DeleteDocument(dbName, collName, doc.Key, nil)
+	err = c.DeleteDocument(dbName, collName, doc.Key, &ara.DeleteDocumentConfig{IfMatch: doc.Rev})
 	if err != nil {
 		log.Printf("err=%v", err)
 		return err
