@@ -99,6 +99,12 @@ func run(username, password string) (err error) {
 	}
 	log.Printf("created documents=%v", docs)
 
+	err = c.DeleteDocument(dbName, collName, doc.Key, nil)
+	if err != nil {
+		log.Printf("err=%v", err)
+		return err
+	}
+
 	err = c.TruncateCollection(dbName, collName)
 	if err != nil {
 		return err
