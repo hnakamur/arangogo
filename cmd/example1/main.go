@@ -105,6 +105,43 @@ func run(username, password string) (err error) {
 		return err
 	}
 
+	edgeCollName := "myedges"
+	err = c.CreateCollection(dbName, ara.CreateCollectionConfig{Name: edgeCollName})
+	if err != nil {
+		return err
+	}
+	edges := []map[string]interface{}{
+		{
+			"label": docs[0].Key + "->" + docs[1].Key,
+			"_from": docs[0].ID,
+			"_to":   docs[1].ID,
+		},
+		{
+			"label": docs[0].Key + "->" + docs[2].Key,
+			"_from": docs[0].ID,
+			"_to":   docs[2].ID,
+		},
+	}
+	waitForSync := true
+	edgeDocs, err := c.CreateDocuments(dbName, edgeCollName, edges, &ara.CreateDocumentConfig{
+		WaitForSync: &waitForSync,
+	})
+	if err != nil {
+		log.Printf("err=%v", err)
+		return err
+	}
+	log.Printf("created edge documents=%v", edgeDocs)
+
+	edges2, err := c.ListEdges(dbName, edgeCollName, &ara.ListEdgesConfig{
+		Vertex:    docs[0].ID,
+		Direction: ara.DirectionOut,
+	})
+	if err != nil {
+		log.Printf("err=%v", err)
+		return err
+	}
+	log.Printf("listed edges=%v", edges2)
+
 	err = c.TruncateCollection(dbName, collName)
 	if err != nil {
 		return err
