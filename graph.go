@@ -23,3 +23,15 @@ func (c *Connection) CreateGraph(dbName string, config CreateGraphConfig) (inter
 	}
 	return body, nil
 }
+
+func (c *Connection) ListGraphs(dbName string) ([]interface{}, error) {
+	var body struct {
+		Graphs []interface{} `json:"graphs"`
+	}
+	u := dbPrefix(dbName) + "/_api/gharial"
+	_, err := c.send("GET", u, nil, nil, &body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create graph: %v", err)
+	}
+	return body.Graphs, nil
+}

@@ -82,5 +82,13 @@ func run(username, password string) (err error) {
 	}
 	log.Printf("graph=%v", graph)
 
+	graphs, err := c.ListGraphs(dbName)
+	if err != nil {
+		return err
+	}
+	for i, graph := range graphs {
+		log.Printf("i=%d, graph=%v", i, graph)
+	}
+
 	return nil
 }
