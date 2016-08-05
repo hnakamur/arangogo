@@ -35,3 +35,20 @@ func (c *Connection) ListGraphs(dbName string) ([]interface{}, error) {
 	}
 	return body.Graphs, nil
 }
+
+type DropGraphConfig struct {
+	Name            string
+	DropCollections bool
+}
+
+func (c *Connection) DropGraph(dbName string, config DropGraphConfig) error {
+	u := dbPrefix(dbName) + "/_api/gharial/" + config.Name
+	if config.DropCollections {
+		u += "?dropCollections=true"
+	}
+	_, err := c.send("DELETE", u, nil, nil, nil)
+	if err != nil {
+		return fmt.Errorf("failed to delete  graph: %v", err)
+	}
+	return nil
+}

@@ -90,5 +90,16 @@ func run(username, password string) (err error) {
 		log.Printf("i=%d, graph=%v", i, graph)
 	}
 
+	err = c.DropGraph(dbName, ara.DropGraphConfig{Name: graphName})
+	if err != nil {
+		return err
+	}
+
+	graphs, err = c.ListGraphs(dbName)
+	if err != nil {
+		return err
+	}
+	log.Printf("len(graphs)=%d", len(graphs))
+
 	return nil
 }
