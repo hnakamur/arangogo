@@ -132,16 +132,6 @@ func run(username, password string) (err error) {
 	}
 	log.Printf("created edge documents=%v", edgeDocs)
 
-	edges2, err := c.ListEdges(dbName, edgeCollName, &ara.ListEdgesConfig{
-		Vertex:    docs[0].ID,
-		Direction: ara.DirectionOut,
-	})
-	if err != nil {
-		log.Printf("err=%v", err)
-		return err
-	}
-	log.Printf("listed edges=%v", edges2)
-
 	err = c.TruncateCollection(dbName, collName)
 	if err != nil {
 		return err
