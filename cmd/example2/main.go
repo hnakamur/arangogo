@@ -95,7 +95,7 @@ func run(username, password string) (err error) {
 		return err
 	}
 	for i, collection := range collections {
-		log.Printf("i=%d, collection=%s", i, collection)
+		log.Printf("ListVertexCollections. i=%d, collection=%s", i, collection)
 	}
 
 	graph2, err := c.AddVertexCollection(dbName, graphName, "otherVertices")
@@ -103,6 +103,14 @@ func run(username, password string) (err error) {
 		return err
 	}
 	log.Printf("AddVertexCollection. graph=%v", graph2)
+
+	collections, err = c.ListEdgeDefinitions(dbName, graphName)
+	if err != nil {
+		return err
+	}
+	for i, collection := range collections {
+		log.Printf("ListEdgeDefinitions. i=%d, collection=%s", i, collection)
+	}
 
 	graph3, err := c.RemoveVertexCollection(dbName, graphName, "otherVertices")
 	if err != nil {
