@@ -22,7 +22,7 @@ func (c CreateVertexConfig) urlValues() url.Values {
 	return nil
 }
 
-func (c *Connection) CreateVertex(dbName, graphName, collName string, data interface{}, config CreateVertexConfig) (DocIDKeyRev, int, error) {
+func (c *Connection) CreateVertex(dbName, graphName, collName string, data interface{}, config CreateVertexConfig) (idKeyRev DocIDKeyRev, rc int, err error) {
 	path := buildPath(pathConfig{
 		dbName:      dbName,
 		pathFormat:  "/_api/gharial/%s/vertex/%s",
@@ -34,7 +34,7 @@ func (c *Connection) CreateVertex(dbName, graphName, collName string, data inter
 		Vertex DocIDKeyRev `json:"vertex"`
 		Code   int         `json:"code"`
 	}
-	_, err := c.send("POST", path, nil, data, &body)
+	_, err = c.send("POST", path, nil, data, &body)
 	if err != nil {
 		return body.Vertex, 0, fmt.Errorf("failed to create vertex: %v", err)
 	}
@@ -45,7 +45,7 @@ type GetVertexConfig struct {
 	IfMatch string
 }
 
-func (c GetVertexConfig) Header() http.Header {
+func (c GetVertexConfig) header() http.Header {
 	var header http.Header
 	if c.IfMatch != "" {
 		header = make(http.Header)
@@ -67,7 +67,7 @@ func (c *Connection) GetVertex(dbName, graphName, collName, vertexKey string, co
 		Vertex interface{} `json:"vertex"`
 		Code   int         `json:"code"`
 	}
-	_, err = c.send("GET", path, config.Header(), nil, &body)
+	_, err = c.send("GET", path, config.header(), nil, &body)
 	if err != nil {
 		return body.Vertex, 0, fmt.Errorf("failed to create vertex: %v", err)
 	}
