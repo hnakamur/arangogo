@@ -113,3 +113,15 @@ func (c *Connection) ListEdgeDefinitions(dbName, graphName string) ([]string, er
 	}
 	return body.Collections, nil
 }
+
+func (c *Connection) AddEdgeDefinition(dbName, graphName string, edgeDefinition EdgeDefinition) (Graph, error) {
+	var body struct {
+		Graph Graph `json:"graph"`
+	}
+	u := dbPrefix(dbName) + "/_api/gharial/" + graphName + "/edge"
+	_, err := c.send("POST", u, nil, edgeDefinition, &body)
+	if err != nil {
+		return body.Graph, fmt.Errorf("failed to add edge definition: %v", err)
+	}
+	return body.Graph, nil
+}

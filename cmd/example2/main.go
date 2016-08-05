@@ -104,6 +104,21 @@ func run(username, password string) (err error) {
 	}
 	log.Printf("AddVertexCollection. graph=%v", graph2)
 
+	graph2, err = c.AddEdgeDefinition(dbName, graphName, ara.EdgeDefinition{
+		Collection: "works_in",
+		From: []string{
+			"female",
+			"male",
+		},
+		To: []string{
+			"city",
+		},
+	})
+	if err != nil {
+		return err
+	}
+	log.Printf("AddEdgeDefinition. graph=%v", graph2)
+
 	collections, err = c.ListEdgeDefinitions(dbName, graphName)
 	if err != nil {
 		return err
@@ -112,11 +127,11 @@ func run(username, password string) (err error) {
 		log.Printf("ListEdgeDefinitions. i=%d, collection=%s", i, collection)
 	}
 
-	graph3, err := c.RemoveVertexCollection(dbName, graphName, "otherVertices")
+	graph2, err = c.RemoveVertexCollection(dbName, graphName, "otherVertices")
 	if err != nil {
 		return err
 	}
-	log.Printf("RemoveVertexCollection. graph=%v", graph3)
+	log.Printf("RemoveVertexCollection. graph=%v", graph2)
 
 	err = c.DropGraph(dbName, ara.DropGraphConfig{Name: graphName})
 	if err != nil {
