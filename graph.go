@@ -73,11 +73,11 @@ type Graph struct {
 	Rev               string           `json:"_rev"`
 }
 
-func (c *Connection) AddVertexCollection(dbName, graphName, collection string) (*Graph, error) {
+func (c *Connection) AddVertexCollection(dbName, graphName, collectionName string) (Graph, error) {
 	payload := struct {
 		Collection string `json:"collection"`
 	}{
-		Collection: collection,
+		Collection: collectionName,
 	}
 	var body struct {
 		Graph Graph `json:"graph"`
@@ -85,7 +85,19 @@ func (c *Connection) AddVertexCollection(dbName, graphName, collection string) (
 	u := dbPrefix(dbName) + "/_api/gharial/" + graphName + "/vertex"
 	_, err := c.send("POST", u, nil, payload, &body)
 	if err != nil {
-		return nil, fmt.Errorf("failed to add vertex collections: %v", err)
+		return body.Graph, fmt.Errorf("failed to add vertex collections: %v", err)
 	}
-	return &body.Graph, nil
+	return body.Graph, nil
+}
+
+func (c *Connection) RemoveVertexCollection(dbName, graphName, collectionName string) (Graph, error) {
+	var body struct {
+		Graph Graph `json:"graph"`
+	}
+	u := dbPrefix(dbName) + "/_api/gharial/" + graphName + "/vertex/" + collectionName
+	_, err := c.send("DELETE", u, nil, nil, &body)
+	if err != nil {
+		return body.Graph, fmt.Errorf("failed to remove vertex collections: %v", err)
+	}
+	return body.Graph, nil
 }
