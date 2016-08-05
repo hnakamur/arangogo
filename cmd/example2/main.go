@@ -137,6 +137,13 @@ func run(username, password string) (err error) {
 	}
 	log.Printf("CreateVertex. idKeyRev=%v, rc=%d", idKeyRev, rc)
 
+	vertex, rc, err := c.GetVertex(dbName, graphName, collName, idKeyRev.Key,
+		ara.GetVertexConfig{})
+	if err != nil {
+		return err
+	}
+	log.Printf("GetVertex. vertex=%v, rc=%d", vertex, rc)
+
 	graph2, err = c.RemoveEdgeDefinition(dbName, graphName, "works_in")
 	if err != nil {
 		return err
