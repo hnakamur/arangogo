@@ -90,6 +90,14 @@ func run(username, password string) (err error) {
 		log.Printf("i=%d, graph=%v", i, graph)
 	}
 
+	collections, err := c.ListVertexCollections(dbName, graphName)
+	if err != nil {
+		return err
+	}
+	for i, collection := range collections {
+		log.Printf("i=%d, collection=%s", i, collection)
+	}
+
 	err = c.DropGraph(dbName, ara.DropGraphConfig{Name: graphName})
 	if err != nil {
 		return err

@@ -52,3 +52,15 @@ func (c *Connection) DropGraph(dbName string, config DropGraphConfig) error {
 	}
 	return nil
 }
+
+func (c *Connection) ListVertexCollections(dbName, graphName string) ([]string, error) {
+	var body struct {
+		Collections []string `json:"collections"`
+	}
+	u := dbPrefix(dbName) + "/_api/gharial/" + graphName + "/vertex"
+	_, err := c.send("GET", u, nil, nil, &body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get vertex collections: %v", err)
+	}
+	return body.Collections, nil
+}
