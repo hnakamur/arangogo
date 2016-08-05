@@ -11,7 +11,10 @@ type CreateVertexConfig struct {
 	WaitForSync *bool
 }
 
-func (c CreateVertexConfig) urlValues() url.Values {
+func (c *CreateVertexConfig) urlValues() url.Values {
+	if c == nil {
+		return nil
+	}
 	if c.WaitForSync != nil {
 		return url.Values{
 			"waitForSync": []string{
@@ -22,7 +25,7 @@ func (c CreateVertexConfig) urlValues() url.Values {
 	return nil
 }
 
-func (c *Connection) CreateVertex(dbName, graphName, collName string, data interface{}, config CreateVertexConfig) (idKeyRev DocIDKeyRev, rc int, err error) {
+func (c *Connection) CreateVertex(dbName, graphName, collName string, data interface{}, config *CreateVertexConfig) (idKeyRev DocIDKeyRev, rc int, err error) {
 	path := buildPath(pathConfig{
 		dbName:      dbName,
 		pathFormat:  "/_api/gharial/%s/vertex/%s",
@@ -45,7 +48,10 @@ type GetVertexConfig struct {
 	IfMatch string
 }
 
-func (c GetVertexConfig) header() http.Header {
+func (c *GetVertexConfig) header() http.Header {
+	if c == nil {
+		return nil
+	}
 	var header http.Header
 	if c.IfMatch != "" {
 		header = make(http.Header)
@@ -56,7 +62,7 @@ func (c GetVertexConfig) header() http.Header {
 	return nil
 }
 
-func (c *Connection) GetVertex(dbName, graphName, collName, vertexKey string, config GetVertexConfig) (vertex interface{}, rc int, err error) {
+func (c *Connection) GetVertex(dbName, graphName, collName, vertexKey string, config *GetVertexConfig) (vertex interface{}, rc int, err error) {
 	path := buildPath(pathConfig{
 		dbName:     dbName,
 		pathFormat: "/_api/gharial/%s/vertex/%s/%s",

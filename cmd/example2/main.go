@@ -131,14 +131,14 @@ func run(username, password string) (err error) {
 	waitForSync := true
 	idKeyRev, rc, err := c.CreateVertex(dbName, graphName, collName,
 		map[string]string{"name": "Francis"},
-		ara.CreateVertexConfig{WaitForSync: &waitForSync})
+		&ara.CreateVertexConfig{WaitForSync: &waitForSync})
 	if err != nil {
 		return err
 	}
 	log.Printf("CreateVertex. idKeyRev=%v, rc=%d", idKeyRev, rc)
 
 	vertex, rc, err := c.GetVertex(dbName, graphName, collName, idKeyRev.Key,
-		ara.GetVertexConfig{})
+		nil)
 	if err != nil {
 		return err
 	}
