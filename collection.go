@@ -24,14 +24,6 @@ type CreateCollectionConfig struct {
 	IndexBuckets   int                    `json:"indexBuckets,omitempty"`
 }
 
-func dbPrefix(name string) string {
-	if name == SystemDatabaseName || name == "" {
-		return ""
-	} else {
-		return "/_db/" + name
-	}
-}
-
 func (c *Connection) CreateCollection(dbName string, config CreateCollectionConfig) error {
 	_, err := c.send("POST", dbPrefix(dbName)+"/_api/collection", nil, config, nil)
 	if err != nil {

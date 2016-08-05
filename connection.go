@@ -183,3 +183,32 @@ type response struct {
 	rawResponse *http.Response
 	body        []byte
 }
+
+func dbPrefix(name string) string {
+	if name == SystemDatabaseName || name == "" {
+		return ""
+	} else {
+		return "/_db/" + name
+	}
+}
+
+type pathConfig struct {
+	dbName      string
+	pathFormat  string
+	pathParams  []interface{}
+	queryParams url.Values
+}
+
+func buildPath(c pathConfig) string {
+	var path string
+	if c.dbName != SystemDatabaseName && c.dbName != "" {
+		path = "/_db/" + c.dbName
+	}
+	path += fmt.Sprintf(c.pathFormat, c.pathParams...)
+	if len(c.queryParams) > 0 {
+		path += "?" + c.queryParams.Encode()
+	}
+	return path
+}
+
+//func buildURL(dbName string, format string, params interface{}...)

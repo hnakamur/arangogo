@@ -127,6 +127,16 @@ func run(username, password string) (err error) {
 		log.Printf("ListEdgeDefinitions. i=%d, collection=%s", i, collection)
 	}
 
+	collName := "startVertices"
+	waitForSync := true
+	idKeyRev, rc, err := c.CreateVertex(dbName, graphName, collName,
+		map[string]string{"name": "Francis"},
+		ara.CreateVertexConfig{WaitForSync: &waitForSync})
+	if err != nil {
+		return err
+	}
+	log.Printf("CreateVertex. idKeyRev=%v, rc=%d", idKeyRev, rc)
+
 	graph2, err = c.RemoveEdgeDefinition(dbName, graphName, "works_in")
 	if err != nil {
 		return err
