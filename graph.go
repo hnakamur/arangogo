@@ -64,3 +64,28 @@ func (c *Connection) ListVertexCollections(dbName, graphName string) ([]string, 
 	}
 	return body.Collections, nil
 }
+
+type Graph struct {
+	Name              string           `json:"name"`
+	EdgeDefinitions   []EdgeDefinition `json:"edgeDefinitions",omitempty`
+	OrphanCollections []string         `json:"orphanCollections",omitempty`
+	ID                string           `json:"_id"`
+	Rev               string           `json:"_rev"`
+}
+
+func (c *Connection) AddVertexCollection(dbName, graphName, collection string) (*Graph, error) {
+	payload := struct {
+		Collection string `json:"collection"`
+	}{
+		Collection: collection,
+	}
+	var body struct {
+		Graph Graph `json:"graph"`
+	}
+	u := dbPrefix(dbName) + "/_api/gharial/" + graphName + "/vertex"
+	_, err := c.send("POST", u, nil, payload, &body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to add vertex collections: %v", err)
+	}
+	return &body.Graph, nil
+}

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 
 	ara "github.com/hnakamur/arangogo"
@@ -97,6 +98,12 @@ func run(username, password string) (err error) {
 	for i, collection := range collections {
 		log.Printf("i=%d, collection=%s", i, collection)
 	}
+
+	graph2, err := c.AddVertexCollection(dbName, graphName, "otherVertices")
+	if err != nil {
+		return err
+	}
+	fmt.Printf("AddVertexCollection. graph=%v", *graph2)
 
 	err = c.DropGraph(dbName, ara.DropGraphConfig{Name: graphName})
 	if err != nil {
