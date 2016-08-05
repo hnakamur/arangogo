@@ -127,6 +127,12 @@ func run(username, password string) (err error) {
 		log.Printf("ListEdgeDefinitions. i=%d, collection=%s", i, collection)
 	}
 
+	graph2, err = c.RemoveEdgeDefinition(dbName, graphName, "works_in")
+	if err != nil {
+		return err
+	}
+	log.Printf("RemoveEdgeDefinition. graph=%v", graph2)
+
 	graph2, err = c.RemoveVertexCollection(dbName, graphName, "otherVertices")
 	if err != nil {
 		return err

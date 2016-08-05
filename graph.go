@@ -125,3 +125,15 @@ func (c *Connection) AddEdgeDefinition(dbName, graphName string, edgeDefinition 
 	}
 	return body.Graph, nil
 }
+
+func (c *Connection) RemoveEdgeDefinition(dbName, graphName, definitionName string) (Graph, error) {
+	var body struct {
+		Graph Graph `json:"graph"`
+	}
+	u := dbPrefix(dbName) + "/_api/gharial/" + graphName + "/edge/" + definitionName
+	_, err := c.send("DELETE", u, nil, nil, &body)
+	if err != nil {
+		return body.Graph, fmt.Errorf("failed to remove edge definition: %v", err)
+	}
+	return body.Graph, nil
+}
