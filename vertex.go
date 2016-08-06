@@ -146,3 +146,61 @@ func (c *Connection) ModifyVertex(dbName, graphName, collName, vertexKey string,
 	}
 	return body.Vertex, body.Code, nil
 }
+
+type ReplaceVertexResult struct {
+	ID     string `json:"_id"`
+	Key    string `json:"_key"`
+	Rev    string `json:"_rev"`
+	OldRev string `json:"_oldRev"`
+}
+
+type ReplaceVertexConfig struct {
+	WaitForSync *bool
+	IfMatch     string
+}
+
+func (c *ReplaceVertexConfig) header() http.Header {
+	if c == nil {
+		return nil
+	}
+
+	var header http.Header
+	if c.IfMatch != "" {
+		header = make(http.Header)
+		header.Set("if-match", c.IfMatch)
+		return header
+	}
+	return nil
+}
+
+func (c *ReplaceVertexConfig) queryParams() url.Values {
+	if c == nil {
+		return nil
+	}
+
+	var params url.Values
+	if c.WaitForSync != nil {
+		params = make(url.Values)
+		params.Set("waitForSync", strconv.FormatBool(*c.WaitForSync))
+	}
+	return params
+}
+
+func (c *Connection) ReplaceVertex(dbName, graphName, collName, vertexKey string, data interface{}, config *ReplaceVertexConfig) (vertex ReplaceVertexResult, rc int, err error) {
+	path := buildPath(pathConfig{
+		dbName:      dbName,
+		pathFormat:  "/_api/gharial/%s/vertex/%s/%s",
+		pathParams:  []interface{}{graphName, collName, vertexKey},
+		queryParams: config.queryParams(),
+	})
+
+	var body struct {
+		Vertex ReplaceVertexResult `json:"vertex"`
+		Code   int                 `json:"code"`
+	}
+	_, err = c.send(http.MethodPut, path, config.header(), data, &body)
+	if err != nil {
+		return body.Vertex, 0, fmt.Errorf("failed to modify vertex: %v", err)
+	}
+	return body.Vertex, body.Code, nil
+}

@@ -144,6 +144,14 @@ func run(username, password string) (err error) {
 	}
 	log.Printf("ModifyVertex. modifyVertexRes=%v, rc=%d", modifyVertexRes, rc)
 
+	replaceVertexRes, rc, err := c.ReplaceVertex(dbName, graphName, collName, createVertexRes.Key,
+		map[string]interface{}{"name": "Alice Cooper", "age": 26},
+		&ara.ReplaceVertexConfig{WaitForSync: ara.TruePtr()})
+	if err != nil {
+		return err
+	}
+	log.Printf("ReplaceVertex. replaceVertexRes=%v, rc=%d", replaceVertexRes, rc)
+
 	var vertex interface{}
 	rc, err = c.GetVertex(dbName, graphName, collName, createVertexRes.Key, nil, &vertex)
 	if err != nil {
