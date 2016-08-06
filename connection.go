@@ -78,7 +78,7 @@ type HTTPError struct {
 	StatusCode int
 }
 
-func (c *Connection) send(method, path string, header http.Header, payload, respBody interface{}) (*response, error) {
+func (c *Connection) send(method, path string, header http.Header, payload, respBody interface{}) (*http.Response, error) {
 	var reader io.Reader
 	var payloadBytes []byte
 	if payload != nil {
@@ -122,6 +122,7 @@ func (c *Connection) send(method, path string, header http.Header, payload, resp
 	if err != nil {
 		return nil, fmt.Errorf("failed to read response body: %v", err)
 	}
+	resp.Body = ioutil.NopCloser(bytes.NewBuffer(b))
 	if true {
 		var reqH []byte
 		for k, vv := range req.Header {
@@ -184,15 +185,7 @@ func (c *Connection) send(method, path string, header http.Header, payload, resp
 		}
 	}
 
-	return &response{
-		rawResponse: resp,
-		body:        b,
-	}, nil
-}
-
-type response struct {
-	rawResponse *http.Response
-	body        []byte
+	return resp, nil
 }
 
 type pathConfig struct {

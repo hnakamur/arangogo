@@ -55,14 +55,14 @@ func (c *Connection) CreateDocument(dbName, collName string, data interface{}, c
 	}
 	resp, err := c.send(http.MethodPost, path, nil, data, &body)
 	if err != nil {
-		return doc, resp.rawResponse.StatusCode, fmt.Errorf("failed to create document: %v", err)
+		return doc, resp.StatusCode, fmt.Errorf("failed to create document: %v", err)
 	}
 	doc = Document{
 		ID:  body.ID,
 		Key: body.Key,
 		Rev: body.Rev,
 	}
-	return doc, resp.rawResponse.StatusCode, nil
+	return doc, resp.StatusCode, nil
 }
 
 type CreateDocumentsConfig struct {
@@ -93,9 +93,9 @@ func (c *Connection) CreateDocuments(dbName, collName string, data interface{}, 
 	var body []Document
 	resp, err := c.send(http.MethodPost, path, nil, data, &body)
 	if err != nil {
-		return nil, resp.rawResponse.StatusCode, fmt.Errorf("failed to create documents: %v", err)
+		return nil, resp.StatusCode, fmt.Errorf("failed to create documents: %v", err)
 	}
-	return body, resp.rawResponse.StatusCode, nil
+	return body, resp.StatusCode, nil
 }
 
 type RemoveDocumentConfig struct {
@@ -155,12 +155,12 @@ func (c *Connection) RemoveDocument(dbName, collName, key string, config *Remove
 	}
 	resp, err := c.send(http.MethodDelete, path, config.header(), nil, &body)
 	if err != nil {
-		return doc, resp.rawResponse.StatusCode, fmt.Errorf("failed to remove document: %v", err)
+		return doc, resp.StatusCode, fmt.Errorf("failed to remove document: %v", err)
 	}
 	doc = Document{
 		ID:  body.ID,
 		Key: body.Key,
 		Rev: body.Rev,
 	}
-	return doc, resp.rawResponse.StatusCode, nil
+	return doc, resp.StatusCode, nil
 }
