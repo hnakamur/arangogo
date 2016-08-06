@@ -134,11 +134,29 @@ type AddVertexCollectionResult struct {
 	Rev               string           `json:"_rev"`
 }
 
-func (c *Connection) AddVertexCollection(dbName, graphName, collectionName string) (r AddVertexCollectionResult, rc int, err error) {
+type AddVertexCollectionConfig struct {
+	WaitForSync *bool
+}
+
+func (c *AddVertexCollectionConfig) urlValues() url.Values {
+	if c == nil {
+		return nil
+	}
+
+	var params url.Values
+	if c.WaitForSync != nil {
+		params = make(url.Values)
+		params.Set("waitForSync", strconv.FormatBool(*c.WaitForSync))
+	}
+	return params
+}
+
+func (c *Connection) AddVertexCollection(dbName, graphName, collectionName string, config *AddVertexCollectionConfig) (r AddVertexCollectionResult, rc int, err error) {
 	path := buildPath(pathConfig{
-		dbName:     dbName,
-		pathFormat: "/_api/gharial/%s/vertex",
-		pathParams: []interface{}{graphName},
+		dbName:      dbName,
+		pathFormat:  "/_api/gharial/%s/vertex",
+		pathParams:  []interface{}{graphName},
+		queryParams: config.urlValues(),
 	})
 
 	payload := struct {
@@ -201,16 +219,22 @@ func (c *Connection) RemoveVertexCollection(dbName, graphName, collectionName st
 	return body.Graph, body.Code, nil
 }
 
-func (c *Connection) ListEdgeDefinitions(dbName, graphName string) ([]string, error) {
+func (c *Connection) ListEdgeDefinitions(dbName, graphName string) (collections []string, rc int, err error) {
+	path := buildPath(pathConfig{
+		dbName:     dbName,
+		pathFormat: "/_api/gharial/%s/edge",
+		pathParams: []interface{}{graphName},
+	})
+
 	var body struct {
 		Collections []string `json:"collections"`
+		Code        int      `json:"code"`
 	}
-	u := dbPrefix(dbName) + "/_api/gharial/" + graphName + "/edge"
-	_, err := c.send("GET", u, nil, nil, &body)
+	_, err = c.send(http.MethodGet, path, nil, nil, &body)
 	if err != nil {
-		return nil, fmt.Errorf("failed to list edge definitions: %v", err)
+		return nil, 0, fmt.Errorf("failed to list edge definitions: %v", err)
 	}
-	return body.Collections, nil
+	return body.Collections, body.Code, nil
 }
 
 type AddEdgeDefinitionResult struct {

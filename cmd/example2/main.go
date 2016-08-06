@@ -95,10 +95,12 @@ func run(username, password string) (err error) {
 	}
 	log.Printf("ListVertexCollections. collection=%s, rc=%d", collections, rc)
 
-	addVertexCollectionRes, rc, err := c.AddVertexCollection(dbName, graphName, "otherVertices")
+	addVertexCollectionRes, rc, err := c.AddVertexCollection(dbName, graphName, "otherVertices",
+		&ara.AddVertexCollectionConfig{WaitForSync: ara.TruePtr()})
 	if err != nil {
 		return err
 	}
+	// NOTE: rc was 202 for waitForSync=true. should have been 201.
 	log.Printf("AddVertexCollection. addVertexCollectionRes=%v, rc=%d", addVertexCollectionRes, rc)
 
 	addEdgeDefinitionRes, err := c.AddEdgeDefinition(dbName, graphName, ara.EdgeDefinition{
@@ -116,13 +118,11 @@ func run(username, password string) (err error) {
 	}
 	log.Printf("AddEdgeDefinition. addEdgeDefinitionRes=%v", addEdgeDefinitionRes)
 
-	collections, err = c.ListEdgeDefinitions(dbName, graphName)
+	collections, rc, err = c.ListEdgeDefinitions(dbName, graphName)
 	if err != nil {
 		return err
 	}
-	for i, collection := range collections {
-		log.Printf("ListEdgeDefinitions. i=%d, collection=%s", i, collection)
-	}
+	log.Printf("ListEdgeDefinitions. collections=%v, rc=%d", collections, rc)
 
 	collName := "startVertices"
 	createVertexRes, rc, err := c.CreateVertex(dbName, graphName, collName,
