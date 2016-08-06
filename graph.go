@@ -1,6 +1,29 @@
 package arangogo
 
-import "fmt"
+import (
+	"fmt"
+	"net/http"
+)
+
+func (c *Connection) ListGraphs(dbName string, graphsPtr interface{}) (rc int, err error) {
+	path := buildPath(pathConfig{
+		dbName:     dbName,
+		pathFormat: "/_api/gharial",
+	})
+
+	var body struct {
+		Graphs interface{} `json:"graphs"`
+		Code   int         `json:"code"`
+	}
+	if graphsPtr != nil {
+		body.Graphs = graphsPtr
+	}
+	_, err = c.send(http.MethodGet, path, nil, nil, &body)
+	if err != nil {
+		return 0, fmt.Errorf("failed to list graphs: %v", err)
+	}
+	return body.Code, nil
+}
 
 type EdgeDefinition struct {
 	Collection string   `json:"collection"`
@@ -22,18 +45,6 @@ func (c *Connection) CreateGraph(dbName string, config CreateGraphConfig) (inter
 		return nil, fmt.Errorf("failed to create graph: %v", err)
 	}
 	return body, nil
-}
-
-func (c *Connection) ListGraphs(dbName string) ([]interface{}, error) {
-	var body struct {
-		Graphs []interface{} `json:"graphs"`
-	}
-	u := dbPrefix(dbName) + "/_api/gharial"
-	_, err := c.send("GET", u, nil, nil, &body)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create graph: %v", err)
-	}
-	return body.Graphs, nil
 }
 
 type DropGraphConfig struct {

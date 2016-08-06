@@ -82,13 +82,12 @@ func run(username, password string) (err error) {
 	}
 	log.Printf("graph=%v", graph)
 
-	graphs, err := c.ListGraphs(dbName)
+	var graphs []interface{}
+	rc, err := c.ListGraphs(dbName, &graphs)
 	if err != nil {
 		return err
 	}
-	for i, graph := range graphs {
-		log.Printf("i=%d, graph=%v", i, graph)
-	}
+	log.Printf("ListGraphs. rc=%d, graphs=%v", rc, graphs)
 
 	collections, err := c.ListVertexCollections(dbName, graphName)
 	if err != nil {
@@ -227,11 +226,11 @@ func run(username, password string) (err error) {
 		return err
 	}
 
-	graphs, err = c.ListGraphs(dbName)
+	rc, err = c.ListGraphs(dbName, &graphs)
 	if err != nil {
 		return err
 	}
-	log.Printf("len(graphs)=%d", len(graphs))
+	log.Printf("ListGraphs. rc=%d, graphs=%v", rc, graphs)
 
 	return nil
 }

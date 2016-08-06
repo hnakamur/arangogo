@@ -7,12 +7,6 @@ import (
 	"strconv"
 )
 
-type DocIDKeyRev struct {
-	ID  string `json:"_id"`
-	Key string `json:"_key"`
-	Rev string `json:"_rev"`
-}
-
 type CreateDocumentConfig struct {
 	WaitForSync *bool
 	ReturnNew   *bool
