@@ -88,70 +88,55 @@ func (c *Connection) GetEdge(dbName, graphName, collName, edgeKey string, config
 	return body.Code, nil
 }
 
-//type ModifyVertexResult struct {
-//	ID     string `json:"_id"`
-//	Key    string `json:"_key"`
-//	Rev    string `json:"_rev"`
-//	OldRev string `json:"_oldRev"`
-//}
-//
-//type ModifyVertexConfig struct {
-//	WaitForSync *bool
-//	KeepNull    *bool
-//	IfMatch     string
-//}
-//
-//func (c *ModifyVertexConfig) header() http.Header {
-//	if c == nil {
-//		return nil
-//	}
-//	var header http.Header
-//	if c.IfMatch != "" {
-//		header = make(http.Header)
-//		header.Set("if-match", c.IfMatch)
-//		return header
-//	}
-//
-//	return nil
-//}
-//
-//func (c *ModifyVertexConfig) queryParams() url.Values {
-//	if c == nil {
-//		return nil
-//	}
-//
-//	var params url.Values
-//	if c.WaitForSync != nil || c.KeepNull != nil {
-//		params = make(url.Values)
-//	}
-//	if c.WaitForSync != nil {
-//		params.Set("waitForSync", strconv.FormatBool(*c.WaitForSync))
-//	}
-//	if c.KeepNull != nil {
-//		params.Set("keepNull", strconv.FormatBool(*c.KeepNull))
-//	}
-//	return params
-//}
-//
-//func (c *Connection) ModifyVertex(dbName, graphName, collName, vertexKey string, data interface{}, config *ModifyVertexConfig) (vertex ModifyVertexResult, rc int, err error) {
-//	path := buildPath(pathConfig{
-//		dbName:      dbName,
-//		pathFormat:  "/_api/gharial/%s/vertex/%s/%s",
-//		pathParams:  []interface{}{graphName, collName, vertexKey},
-//		queryParams: config.queryParams(),
-//	})
-//
-//	var body struct {
-//		Vertex ModifyVertexResult `json:"vertex"`
-//		Code   int                `json:"code"`
-//	}
-//	_, err = c.send(http.MethodPatch, path, config.header(), data, &body)
-//	if err != nil {
-//		return body.Vertex, 0, fmt.Errorf("failed to modify vertex: %v", err)
-//	}
-//	return body.Vertex, body.Code, nil
-//}
-//
+type ModifyEdgeResult struct {
+	ID     string `json:"_id"`
+	Key    string `json:"_key"`
+	Rev    string `json:"_rev"`
+	OldRev string `json:"_oldRev"`
+}
+
+type ModifyEdgeConfig struct {
+	WaitForSync *bool
+	KeepNull    *bool
+}
+
+func (c *ModifyEdgeConfig) queryParams() url.Values {
+	if c == nil {
+		return nil
+	}
+
+	var params url.Values
+	if c.WaitForSync != nil || c.KeepNull != nil {
+		params = make(url.Values)
+	}
+	if c.WaitForSync != nil {
+		params.Set("waitForSync", strconv.FormatBool(*c.WaitForSync))
+	}
+	if c.KeepNull != nil {
+		params.Set("keepNull", strconv.FormatBool(*c.KeepNull))
+	}
+	return params
+}
+
+func (c *Connection) ModifyEdge(dbName, graphName, collName, edgeKey string, data interface{}, config *ModifyEdgeConfig) (edge ModifyEdgeResult, rc int, err error) {
+	path := buildPath(pathConfig{
+		dbName:      dbName,
+		pathFormat:  "/_api/gharial/%s/edge/%s/%s",
+		pathParams:  []interface{}{graphName, collName, edgeKey},
+		queryParams: config.queryParams(),
+	})
+
+	var body struct {
+		Edge ModifyEdgeResult `json:"edge"`
+		Code int              `json:"code"`
+	}
+	_, err = c.send(http.MethodPatch, path, nil, data, &body)
+	if err != nil {
+		return body.Edge, 0, fmt.Errorf("failed to modify edge: %v", err)
+	}
+	return body.Edge, body.Code, nil
+}
+
 //type ReplaceVertexResult struct {
 //	ID     string `json:"_id"`
 //	Key    string `json:"_key"`

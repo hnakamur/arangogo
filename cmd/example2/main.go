@@ -170,6 +170,15 @@ func run(username, password string) (err error) {
 	}
 	log.Printf("CreateEdge. createEdgeRes=%v, rc=%d", createEdgeRes, rc)
 
+	modifyEdgeRes, rc, err := c.ModifyEdge(dbName, graphName, collName, createEdgeRes.Key,
+		map[string]interface{}{
+			"since": "01.01.2001",
+		}, &ara.ModifyEdgeConfig{WaitForSync: ara.TruePtr()})
+	if err != nil {
+		return err
+	}
+	log.Printf("ModifyEdge. modifyEdgeRes=%v, rc=%d", modifyEdgeRes, rc)
+
 	var edge interface{}
 	rc, err = c.GetEdge(dbName, graphName, collName, createEdgeRes.Key, nil, &edge)
 	if err != nil {
