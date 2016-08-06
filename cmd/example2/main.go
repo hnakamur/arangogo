@@ -221,10 +221,11 @@ func run(username, password string) (err error) {
 	}
 	log.Printf("RemoveVertexCollection. graph=%v", graph2)
 
-	err = c.DropGraph(dbName, ara.DropGraphConfig{Name: graphName})
+	removed, rc, err = c.DropGraph(dbName, graphName, nil)
 	if err != nil {
 		return err
 	}
+	log.Printf("DropGraph. removed=%v, rc=%d", removed, rc)
 
 	rc, err = c.ListGraphs(dbName, &graphs)
 	if err != nil {

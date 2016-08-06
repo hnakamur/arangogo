@@ -3,6 +3,8 @@ package arangogo
 import (
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 )
 
 func (c *Connection) ListGraphs(dbName string, graphsPtr interface{}) (rc int, err error) {
@@ -63,20 +65,47 @@ func (c *Connection) CreateGraph(dbName string, config CreateGraphConfig) (r Cre
 }
 
 type DropGraphConfig struct {
-	Name            string
-	DropCollections bool
+	// NOTE: waitForSync is not documented in query parameters of https://docs.arangodb.com/3.0/HTTP/Gharial/Management.html#drop-a-graph
+	WaitForSync     *bool
+	DropCollections *bool
+	// NOTE: IfMatch is not supported?
 }
 
-func (c *Connection) DropGraph(dbName string, config DropGraphConfig) error {
-	u := dbPrefix(dbName) + "/_api/gharial/" + config.Name
-	if config.DropCollections {
-		u += "?dropCollections=true"
+func (c *DropGraphConfig) queryParams() url.Values {
+	if c == nil {
+		return nil
 	}
-	_, err := c.send("DELETE", u, nil, nil, nil)
+
+	var params url.Values
+	if c.WaitForSync != nil || c.DropCollections != nil {
+		params = make(url.Values)
+	}
+	if c.WaitForSync != nil {
+		params.Set("waitForSync", strconv.FormatBool(*c.WaitForSync))
+	}
+	if c.DropCollections != nil {
+		params.Set("dropCollections", strconv.FormatBool(*c.DropCollections))
+	}
+	return params
+}
+
+func (c *Connection) DropGraph(dbName, graphName string, config *DropGraphConfig) (removed bool, rc int, err error) {
+	path := buildPath(pathConfig{
+		dbName:      dbName,
+		pathFormat:  "/_api/gharial/%s",
+		pathParams:  []interface{}{graphName},
+		queryParams: config.queryParams(),
+	})
+
+	var body struct {
+		Removed bool `json:"removed"`
+		Code    int  `json:"code"`
+	}
+	_, err = c.send(http.MethodDelete, path, nil, nil, &body)
 	if err != nil {
-		return fmt.Errorf("failed to delete  graph: %v", err)
+		return body.Removed, 0, fmt.Errorf("failed to drop edge: %v", err)
 	}
-	return nil
+	return body.Removed, body.Code, nil
 }
 
 func (c *Connection) ListVertexCollections(dbName, graphName string) ([]string, error) {
