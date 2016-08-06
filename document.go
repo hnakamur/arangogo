@@ -65,26 +65,37 @@ func (c *Connection) CreateDocument(dbName, collName string, data interface{}, c
 	return doc, resp.rawResponse.StatusCode, nil
 }
 
-func (c *Connection) CreateDocuments(dbName, collName string, data interface{}, config *CreateDocumentConfig) ([]Document, error) {
+type CreateDocumentsConfig struct {
+	WaitForSync *bool
+}
+
+func (c *CreateDocumentsConfig) queryParams() url.Values {
+	if c == nil {
+		return nil
+	}
+
+	var params url.Values
+	if c.WaitForSync != nil {
+		params = make(url.Values)
+		params.Set("waitForSync", strconv.FormatBool(*c.WaitForSync))
+	}
+	return params
+}
+
+func (c *Connection) CreateDocuments(dbName, collName string, data interface{}, config *CreateDocumentsConfig) (docs []Document, rc int, err error) {
+	path := buildPath(pathConfig{
+		dbName:      dbName,
+		pathFormat:  "/_api/document/%s",
+		pathParams:  []interface{}{collName},
+		queryParams: config.queryParams(),
+	})
+
 	var body []Document
-	u := dbPrefix(dbName) + "/_api/document/" + collName
-	v := url.Values{}
-	if config != nil {
-		if config.WaitForSync != nil {
-			v.Set("waitForSync", strconv.FormatBool(*config.WaitForSync))
-		}
-		if config.ReturnNew != nil {
-			v.Set("returnNew", strconv.FormatBool(*config.ReturnNew))
-		}
-	}
-	if len(v) > 0 {
-		u = u + "?" + v.Encode()
-	}
-	_, err := c.send("POST", u, nil, data, &body)
+	resp, err := c.send(http.MethodPost, path, nil, data, &body)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create documents: %v", err)
+		return nil, resp.rawResponse.StatusCode, fmt.Errorf("failed to create documents: %v", err)
 	}
-	return body, nil
+	return body, resp.rawResponse.StatusCode, nil
 }
 
 type DeleteDocumentConfig struct {

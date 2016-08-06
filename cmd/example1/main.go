@@ -97,12 +97,12 @@ func run(username, password string) (err error) {
 	}
 	//data2 := `{1:"Foo"},{2:"Bad"}`
 	//data2 := `[{"name":"Foo"},{"name":"Bar"}]`
-	docs, err := c.CreateDocuments(dbName, collName, data2, nil)
+	docs, rc, err := c.CreateDocuments(dbName, collName, data2, nil)
 	if err != nil {
 		log.Printf("err=%v", err)
 		return err
 	}
-	log.Printf("created documents=%v", docs)
+	log.Printf("CreateDocuments. docs=%v, rc=%d", docs, rc)
 
 	err = c.DeleteDocument(dbName, collName, doc.Key, &ara.DeleteDocumentConfig{IfMatch: doc.Rev})
 	if err != nil {
@@ -129,14 +129,14 @@ func run(username, password string) (err error) {
 		},
 	}
 	waitForSync := true
-	edgeDocs, err := c.CreateDocuments(dbName, edgeCollName, edges, &ara.CreateDocumentConfig{
+	edgeDocs, rc, err := c.CreateDocuments(dbName, edgeCollName, edges, &ara.CreateDocumentsConfig{
 		WaitForSync: &waitForSync,
 	})
 	if err != nil {
 		log.Printf("err=%v", err)
 		return err
 	}
-	log.Printf("created edge documents=%v", edgeDocs)
+	log.Printf("created edge documents=%v, rc=%d", edgeDocs, rc)
 
 	collection, rc, err := c.TruncateCollection(dbName, collName)
 	if err != nil {
