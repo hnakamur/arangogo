@@ -78,11 +78,17 @@ func run(username, password string) (err error) {
 	data := map[string]interface{}{
 		"name": "Alice",
 	}
-	doc, err := c.CreateDocument(dbName, collName, data, nil)
+	var docBody struct {
+		ID   string `json:"_id"`
+		Key  string `json:"_key"`
+		Rev  string `json:"_rev"`
+		Name string `json:"name"`
+	}
+	doc, rc, err := c.CreateDocument(dbName, collName, data, &ara.CreateDocumentConfig{ReturnNew: ara.TruePtr()}, &docBody)
 	if err != nil {
 		return err
 	}
-	log.Printf("created document=%v", *doc)
+	log.Printf("CreateDocument. doc=%v, rc=%v, docBody=%v", doc, rc, docBody)
 
 	data2 := []map[string]interface{}{
 		{"name": "Alice"},

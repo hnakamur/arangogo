@@ -7,37 +7,62 @@ import (
 	"strconv"
 )
 
-type CreateDocumentConfig struct {
-	WaitForSync *bool
-	ReturnNew   *bool
-}
-
 type Document struct {
 	ID  string `json:"_id"`
 	Key string `json:"_key"`
 	Rev string `json:"_rev"`
 }
 
-func (c *Connection) CreateDocument(dbName, collName string, data interface{}, config *CreateDocumentConfig) (*Document, error) {
-	body := new(Document)
-	u := dbPrefix(dbName) + "/_api/document/" + collName
-	v := url.Values{}
-	if config != nil {
-		if config.WaitForSync != nil {
-			v.Set("waitForSync", strconv.FormatBool(*config.WaitForSync))
-		}
-		if config.ReturnNew != nil {
-			v.Set("returnNew", strconv.FormatBool(*config.ReturnNew))
-		}
+type CreateDocumentConfig struct {
+	WaitForSync *bool
+	ReturnNew   *bool
+}
+
+func (c *CreateDocumentConfig) queryParams() url.Values {
+	if c == nil {
+		return nil
 	}
-	if len(v) > 0 {
-		u = u + "?" + v.Encode()
+
+	var params url.Values
+	if c.WaitForSync != nil || c.ReturnNew != nil {
+		params = make(url.Values)
 	}
-	_, err := c.send("POST", u, nil, data, body)
+	if c.WaitForSync != nil {
+		params.Set("waitForSync", strconv.FormatBool(*c.WaitForSync))
+	}
+	if c.ReturnNew != nil {
+		params.Set("returnNew", strconv.FormatBool(*c.ReturnNew))
+	}
+	return params
+}
+
+func (c *Connection) CreateDocument(dbName, collName string, data interface{}, config *CreateDocumentConfig, docPtr interface{}) (doc Document, rc int, err error) {
+	path := buildPath(pathConfig{
+		dbName:      dbName,
+		pathFormat:  "/_api/document/%s",
+		pathParams:  []interface{}{collName},
+		queryParams: config.queryParams(),
+	})
+
+	var body struct {
+		ID  string      `json:"_id"`
+		Key string      `json:"_key"`
+		Rev string      `json:"_rev"`
+		New interface{} `json:"new"`
+	}
+	if docPtr != nil {
+		body.New = docPtr
+	}
+	resp, err := c.send(http.MethodPost, path, nil, data, &body)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create document: %v", err)
+		return doc, resp.rawResponse.StatusCode, fmt.Errorf("failed to create document: %v", err)
 	}
-	return body, nil
+	doc = Document{
+		ID:  body.ID,
+		Key: body.Key,
+		Rev: body.Rev,
+	}
+	return doc, resp.rawResponse.StatusCode, nil
 }
 
 func (c *Connection) CreateDocuments(dbName, collName string, data interface{}, config *CreateDocumentConfig) ([]Document, error) {
