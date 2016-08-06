@@ -271,14 +271,20 @@ type RemoveEdgeDefinitionResult struct {
 	Rev               string           `json:"_rev"`
 }
 
-func (c *Connection) RemoveEdgeDefinition(dbName, graphName, definitionName string) (RemoveEdgeDefinitionResult, error) {
+func (c *Connection) RemoveEdgeDefinition(dbName, graphName, definitionName string) (r RemoveEdgeDefinitionResult, rc int, err error) {
+	path := buildPath(pathConfig{
+		dbName:     dbName,
+		pathFormat: "/_api/gharial/%s/edge/%s",
+		pathParams: []interface{}{graphName, definitionName},
+	})
+
 	var body struct {
 		Graph RemoveEdgeDefinitionResult `json:"graph"`
+		Code  int                        `json:"code"`
 	}
-	u := dbPrefix(dbName) + "/_api/gharial/" + graphName + "/edge/" + definitionName
-	_, err := c.send("DELETE", u, nil, nil, &body)
+	_, err = c.send(http.MethodDelete, path, nil, nil, &body)
 	if err != nil {
-		return body.Graph, fmt.Errorf("failed to remove edge definition: %v", err)
+		return body.Graph, body.Code, fmt.Errorf("failed to remove edge definition: %v", err)
 	}
-	return body.Graph, nil
+	return body.Graph, body.Code, nil
 }

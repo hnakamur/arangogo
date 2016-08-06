@@ -207,11 +207,11 @@ func run(username, password string) (err error) {
 	}
 	log.Printf("RemoveVertex. removed=%v, rc=%d", removed, rc)
 
-	removeEdgeDefinitionRes, err := c.RemoveEdgeDefinition(dbName, graphName, "works_in")
+	removeEdgeDefinitionRes, rc, err := c.RemoveEdgeDefinition(dbName, graphName, "works_in")
 	if err != nil {
 		return err
 	}
-	log.Printf("RemoveEdgeDefinition. removeEdgeDefinitionRes=%v", removeEdgeDefinitionRes)
+	log.Printf("RemoveEdgeDefinition. removeEdgeDefinitionRes=%v, rc=%d", removeEdgeDefinitionRes, rc)
 
 	removeVertexCollectionRes, rc, err := c.RemoveVertexCollection(dbName, graphName, "otherVertices",
 		&ara.RemoveVertexCollectionConfig{WaitForSync: ara.TruePtr()})
