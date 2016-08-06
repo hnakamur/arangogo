@@ -139,10 +139,11 @@ func run(username, password string) (err error) {
 		return err
 	}
 
-	err = c.DeleteCollection(dbName, collName)
+	dropCollectionRes, rc, err := c.DropCollection(dbName, collName)
 	if err != nil {
 		return err
 	}
+	log.Printf("DropCollection. res=%v, rc=%d", dropCollectionRes, rc)
 
 	return nil
 }

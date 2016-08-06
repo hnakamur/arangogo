@@ -69,12 +69,29 @@ func (c *Connection) CreateCollection(dbName string, config CreateCollectionConf
 	return r, body.Code, nil
 }
 
-func (c *Connection) DeleteCollection(dbName string, name string) error {
-	_, err := c.send("DELETE", dbPrefix(dbName)+"/_api/collection/"+name, nil, nil, nil)
-	if err != nil {
-		return fmt.Errorf("failed to delete collection: %v", err)
+type DropCollectionResult struct {
+	ID string
+}
+
+func (c *Connection) DropCollection(dbName string, collectionName string) (r DropCollectionResult, rc int, err error) {
+	path := buildPath(pathConfig{
+		dbName:     dbName,
+		pathFormat: "/_api/collection/%s",
+		pathParams: []interface{}{collectionName},
+	})
+
+	var body struct {
+		ID   string `json:"id"`
+		Code int    `json:"code"`
 	}
-	return nil
+	_, err = c.send(http.MethodDelete, path, nil, nil, &body)
+	if err != nil {
+		return r, body.Code, fmt.Errorf("failed to drop collection: %v", err)
+	}
+	r = DropCollectionResult{
+		ID: body.ID,
+	}
+	return r, body.Code, nil
 }
 
 func (c *Connection) ListCollections(dbName string) ([]Collection, error) {
