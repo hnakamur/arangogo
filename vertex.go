@@ -15,14 +15,13 @@ func (c *CreateVertexConfig) urlValues() url.Values {
 	if c == nil {
 		return nil
 	}
+
+	var params url.Values
 	if c.WaitForSync != nil {
-		return url.Values{
-			"waitForSync": []string{
-				strconv.FormatBool(*c.WaitForSync),
-			},
-		}
+		params = make(url.Values)
+		params.Set("waitForSync", strconv.FormatBool(*c.WaitForSync))
 	}
-	return nil
+	return params
 }
 
 func (c *Connection) CreateVertex(dbName, graphName, collName string, data interface{}, config *CreateVertexConfig) (idKeyRev DocIDKeyRev, rc int, err error) {
@@ -37,7 +36,7 @@ func (c *Connection) CreateVertex(dbName, graphName, collName string, data inter
 		Vertex DocIDKeyRev `json:"vertex"`
 		Code   int         `json:"code"`
 	}
-	_, err = c.send("POST", path, nil, data, &body)
+	_, err = c.send(http.MethodPost, path, nil, data, &body)
 	if err != nil {
 		return body.Vertex, 0, fmt.Errorf("failed to create vertex: %v", err)
 	}
@@ -76,7 +75,7 @@ func (c *Connection) GetVertex(dbName, graphName, collName, vertexKey string, co
 	if vertexPtr != nil {
 		body.Vertex = vertexPtr
 	}
-	_, err = c.send("GET", path, config.header(), nil, &body)
+	_, err = c.send(http.MethodGet, path, config.header(), nil, &body)
 	if err != nil {
 		return 0, fmt.Errorf("failed to get vertex: %v", err)
 	}
