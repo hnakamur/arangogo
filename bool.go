@@ -1,12 +1,11 @@
 package arangogo
 
-var myTrue bool = true
-var myFalse bool = false
-
 func TruePtr() *bool {
-	return &myTrue
+	v := true
+	return &v
 }
 
 func FalsePtr() *bool {
-	return &myFalse
+	v := false
+	return &v
 }
