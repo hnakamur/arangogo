@@ -47,7 +47,7 @@ type CreateGraphResult struct {
 	Rev               string           `json:"_rev"`
 }
 
-func (c *Connection) CreateGraph(dbName string, config CreateGraphConfig) (r CreateGraphResult, rc int, err error) {
+func (c *Connection) CreateGraph(dbName string, data interface{}) (r CreateGraphResult, rc int, err error) {
 	path := buildPath(pathConfig{
 		dbName:     dbName,
 		pathFormat: "/_api/gharial",
@@ -57,7 +57,7 @@ func (c *Connection) CreateGraph(dbName string, config CreateGraphConfig) (r Cre
 		Graph CreateGraphResult `json:"graph"`
 		Code  int               `json:"code"`
 	}
-	_, err = c.send(http.MethodPost, path, nil, config, &body)
+	_, err = c.send(http.MethodPost, path, nil, data, &body)
 	if err != nil {
 		return body.Graph, 0, fmt.Errorf("failed to create graph: %v", err)
 	}
