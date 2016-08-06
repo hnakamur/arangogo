@@ -89,13 +89,11 @@ func run(username, password string) (err error) {
 	}
 	log.Printf("ListGraphs. rc=%d, graphs=%v", rc, graphs)
 
-	collections, err := c.ListVertexCollections(dbName, graphName)
+	collections, rc, err := c.ListVertexCollections(dbName, graphName)
 	if err != nil {
 		return err
 	}
-	for i, collection := range collections {
-		log.Printf("ListVertexCollections. i=%d, collection=%s", i, collection)
-	}
+	log.Printf("ListVertexCollections. collection=%s, rc=%d", collections, rc)
 
 	graph2, err := c.AddVertexCollection(dbName, graphName, "otherVertices")
 	if err != nil {

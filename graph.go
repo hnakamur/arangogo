@@ -108,16 +108,22 @@ func (c *Connection) DropGraph(dbName, graphName string, config *DropGraphConfig
 	return body.Removed, body.Code, nil
 }
 
-func (c *Connection) ListVertexCollections(dbName, graphName string) ([]string, error) {
+func (c *Connection) ListVertexCollections(dbName, graphName string) (collections []string, rc int, err error) {
+	path := buildPath(pathConfig{
+		dbName:     dbName,
+		pathFormat: "/_api/gharial/%s/vertex",
+		pathParams: []interface{}{graphName},
+	})
+
 	var body struct {
 		Collections []string `json:"collections"`
+		Code        int      `json:"code"`
 	}
-	u := dbPrefix(dbName) + "/_api/gharial/" + graphName + "/vertex"
-	_, err := c.send("GET", u, nil, nil, &body)
+	_, err = c.send(http.MethodGet, path, nil, nil, &body)
 	if err != nil {
-		return nil, fmt.Errorf("failed to list vertex collections: %v", err)
+		return nil, 0, fmt.Errorf("failed to list vertex collections: %v", err)
 	}
-	return body.Collections, nil
+	return body.Collections, body.Code, nil
 }
 
 type Graph struct {
