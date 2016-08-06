@@ -69,11 +69,12 @@ func (c *Connection) GetVertex(dbName, graphName, collName, vertexKey string, co
 		pathParams: []interface{}{graphName, collName, vertexKey},
 	})
 
-	body := struct {
+	var body struct {
 		Vertex interface{} `json:"vertex"`
 		Code   int         `json:"code"`
-	}{
-		Vertex: vertexPtr,
+	}
+	if vertexPtr != nil {
+		body.Vertex = vertexPtr
 	}
 	_, err = c.send("GET", path, config.header(), nil, &body)
 	if err != nil {
