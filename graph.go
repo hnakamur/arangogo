@@ -37,14 +37,29 @@ type CreateGraphConfig struct {
 	OrphanCollections []string         `json:"orphanCollections",omitempty`
 }
 
-func (c *Connection) CreateGraph(dbName string, config CreateGraphConfig) (interface{}, error) {
-	var body interface{}
-	u := dbPrefix(dbName) + "/_api/gharial"
-	_, err := c.send("POST", u, nil, config, &body)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create graph: %v", err)
+type CreateGraphResult struct {
+	Name              string           `json:"name"`
+	EdgeDefinitions   []EdgeDefinition `json:"edgeDefinitions",omitempty`
+	OrphanCollections []string         `json:"orphanCollections",omitempty`
+	ID                string           `json:"_id"`
+	Rev               string           `json:"_rev"`
+}
+
+func (c *Connection) CreateGraph(dbName string, config CreateGraphConfig) (r CreateGraphResult, rc int, err error) {
+	path := buildPath(pathConfig{
+		dbName:     dbName,
+		pathFormat: "/_api/gharial",
+	})
+
+	var body struct {
+		Graph CreateGraphResult `json:"graph"`
+		Code  int               `json:"code"`
 	}
-	return body, nil
+	_, err = c.send(http.MethodPost, path, nil, config, &body)
+	if err != nil {
+		return body.Graph, 0, fmt.Errorf("failed to create graph: %v", err)
+	}
+	return body.Graph, body.Code, nil
 }
 
 type DropGraphConfig struct {

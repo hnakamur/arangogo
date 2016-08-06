@@ -96,6 +96,7 @@ type ModifyEdgeResult struct {
 }
 
 type ModifyEdgeConfig struct {
+	// NOTE: IfMwatch is not really supported?
 	WaitForSync *bool
 	KeepNull    *bool
 }

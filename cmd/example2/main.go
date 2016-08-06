@@ -63,7 +63,7 @@ func run(username, password string) (err error) {
 	}()
 
 	graphName := "myGraph"
-	graph, err := c.CreateGraph(dbName, ara.CreateGraphConfig{
+	createGraphRes, rc, err := c.CreateGraph(dbName, ara.CreateGraphConfig{
 		Name: graphName,
 		EdgeDefinitions: []ara.EdgeDefinition{
 			{
@@ -80,10 +80,10 @@ func run(username, password string) (err error) {
 	if err != nil {
 		return err
 	}
-	log.Printf("graph=%v", graph)
+	log.Printf("CreateGraph. res=%v, rc=%d", createGraphRes, rc)
 
 	var graphs []interface{}
-	rc, err := c.ListGraphs(dbName, &graphs)
+	rc, err = c.ListGraphs(dbName, &graphs)
 	if err != nil {
 		return err
 	}

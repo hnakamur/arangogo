@@ -210,5 +210,3 @@ func buildPath(c pathConfig) string {
 	}
 	return path
 }
-
-//func buildURL(dbName string, format string, params interface{}...)
