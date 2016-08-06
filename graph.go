@@ -59,7 +59,7 @@ func (c *Connection) CreateGraph(dbName string, data interface{}) (r CreateGraph
 	}
 	_, err = c.send(http.MethodPost, path, nil, data, &body)
 	if err != nil {
-		return body.Graph, 0, fmt.Errorf("failed to create graph: %v", err)
+		return body.Graph, body.Code, fmt.Errorf("failed to create graph: %v", err)
 	}
 	return body.Graph, body.Code, nil
 }
@@ -103,7 +103,7 @@ func (c *Connection) DropGraph(dbName, graphName string, config *DropGraphConfig
 	}
 	_, err = c.send(http.MethodDelete, path, nil, nil, &body)
 	if err != nil {
-		return body.Removed, 0, fmt.Errorf("failed to drop edge: %v", err)
+		return body.Removed, body.Code, fmt.Errorf("failed to drop edge: %v", err)
 	}
 	return body.Removed, body.Code, nil
 }
@@ -121,7 +121,7 @@ func (c *Connection) ListVertexCollections(dbName, graphName string) (collection
 	}
 	_, err = c.send(http.MethodGet, path, nil, nil, &body)
 	if err != nil {
-		return nil, 0, fmt.Errorf("failed to list vertex collections: %v", err)
+		return nil, body.Code, fmt.Errorf("failed to list vertex collections: %v", err)
 	}
 	return body.Collections, body.Code, nil
 }
@@ -214,7 +214,7 @@ func (c *Connection) RemoveVertexCollection(dbName, graphName, collectionName st
 	}
 	_, err = c.send(http.MethodDelete, path, nil, nil, &body)
 	if err != nil {
-		return body.Graph, 0, fmt.Errorf("failed to remove vertex collections: %v", err)
+		return body.Graph, body.Code, fmt.Errorf("failed to remove vertex collections: %v", err)
 	}
 	return body.Graph, body.Code, nil
 }
@@ -232,7 +232,7 @@ func (c *Connection) ListEdgeDefinitions(dbName, graphName string) (collections 
 	}
 	_, err = c.send(http.MethodGet, path, nil, nil, &body)
 	if err != nil {
-		return nil, 0, fmt.Errorf("failed to list edge definitions: %v", err)
+		return nil, body.Code, fmt.Errorf("failed to list edge definitions: %v", err)
 	}
 	return body.Collections, body.Code, nil
 }
@@ -245,16 +245,22 @@ type AddEdgeDefinitionResult struct {
 	Rev               string           `json:"_rev"`
 }
 
-func (c *Connection) AddEdgeDefinition(dbName, graphName string, edgeDefinition EdgeDefinition) (AddEdgeDefinitionResult, error) {
+func (c *Connection) AddEdgeDefinition(dbName, graphName string, edgeDefinition interface{}) (r AddEdgeDefinitionResult, rc int, err error) {
+	path := buildPath(pathConfig{
+		dbName:     dbName,
+		pathFormat: "/_api/gharial/%s/edge",
+		pathParams: []interface{}{graphName},
+	})
+
 	var body struct {
 		Graph AddEdgeDefinitionResult `json:"graph"`
+		Code  int                     `json:"code"`
 	}
-	u := dbPrefix(dbName) + "/_api/gharial/" + graphName + "/edge"
-	_, err := c.send("POST", u, nil, edgeDefinition, &body)
+	_, err = c.send(http.MethodPost, path, nil, edgeDefinition, &body)
 	if err != nil {
-		return body.Graph, fmt.Errorf("failed to add edge definition: %v", err)
+		return body.Graph, body.Code, fmt.Errorf("failed to add edge definition: %v", err)
 	}
-	return body.Graph, nil
+	return body.Graph, body.Code, nil
 }
 
 type RemoveEdgeDefinitionResult struct {

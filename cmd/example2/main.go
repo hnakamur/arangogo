@@ -103,7 +103,7 @@ func run(username, password string) (err error) {
 	// NOTE: rc was 202 for waitForSync=true. should have been 201.
 	log.Printf("AddVertexCollection. addVertexCollectionRes=%v, rc=%d", addVertexCollectionRes, rc)
 
-	addEdgeDefinitionRes, err := c.AddEdgeDefinition(dbName, graphName, ara.EdgeDefinition{
+	addEdgeDefinitionRes, rc, err := c.AddEdgeDefinition(dbName, graphName, ara.EdgeDefinition{
 		Collection: "works_in",
 		From: []string{
 			"female",
@@ -116,7 +116,7 @@ func run(username, password string) (err error) {
 	if err != nil {
 		return err
 	}
-	log.Printf("AddEdgeDefinition. addEdgeDefinitionRes=%v", addEdgeDefinitionRes)
+	log.Printf("AddEdgeDefinition. addEdgeDefinitionRes=%v, rc=%d", addEdgeDefinitionRes, rc)
 
 	collections, rc, err = c.ListEdgeDefinitions(dbName, graphName)
 	if err != nil {
