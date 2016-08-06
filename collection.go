@@ -73,7 +73,7 @@ type DropCollectionResult struct {
 	ID string
 }
 
-func (c *Connection) DropCollection(dbName string, collectionName string) (r DropCollectionResult, rc int, err error) {
+func (c *Connection) DropCollection(dbName, collectionName string) (r DropCollectionResult, rc int, err error) {
 	path := buildPath(pathConfig{
 		dbName:     dbName,
 		pathFormat: "/_api/collection/%s",
@@ -105,10 +105,31 @@ func (c *Connection) ListCollections(dbName string) ([]Collection, error) {
 	return body.Result, nil
 }
 
-func (c *Connection) TruncateCollection(dbName string, name string) error {
-	_, err := c.send("PUT", dbPrefix(dbName)+"/_api/collection/"+name+"/truncate", nil, nil, nil)
-	if err != nil {
-		return fmt.Errorf("failed to truncate collection: %v", err)
+func (c *Connection) TruncateCollection(dbName, collectionName string) (r Collection, rc int, err error) {
+	path := buildPath(pathConfig{
+		dbName:     dbName,
+		pathFormat: "/_api/collection/%s/truncate",
+		pathParams: []interface{}{collectionName},
+	})
+
+	var body struct {
+		ID       string `json:"id"`
+		Name     string `json:"name"`
+		IsSystem bool   `json:"isSystem"`
+		Status   int    `json:"status"`
+		Type     int    `json:"type"`
+		Code     int    `json:"code"`
 	}
-	return nil
+	_, err = c.send(http.MethodPut, path, nil, nil, &body)
+	if err != nil {
+		return r, body.Code, fmt.Errorf("failed to truncate collection: %v", err)
+	}
+	r = Collection{
+		ID:       body.ID,
+		Name:     body.Name,
+		IsSystem: body.IsSystem,
+		Status:   body.Status,
+		Type:     body.Type,
+	}
+	return r, body.Code, nil
 }

@@ -134,10 +134,11 @@ func run(username, password string) (err error) {
 	}
 	log.Printf("created edge documents=%v", edgeDocs)
 
-	err = c.TruncateCollection(dbName, collName)
+	collection, rc, err := c.TruncateCollection(dbName, collName)
 	if err != nil {
 		return err
 	}
+	log.Printf("TruncateCollection. res=%v, rc=%d", collection, rc)
 
 	dropCollectionRes, rc, err := c.DropCollection(dbName, collName)
 	if err != nil {
