@@ -7,6 +7,12 @@ import (
 	"strconv"
 )
 
+type CreateVertexResult struct {
+	ID  string `json:"_id"`
+	Key string `json:"_key"`
+	Rev string `json:"_rev"`
+}
+
 type CreateVertexConfig struct {
 	WaitForSync *bool
 }
@@ -24,7 +30,7 @@ func (c *CreateVertexConfig) urlValues() url.Values {
 	return params
 }
 
-func (c *Connection) CreateVertex(dbName, graphName, collName string, data interface{}, config *CreateVertexConfig) (idKeyRev DocIDKeyRev, rc int, err error) {
+func (c *Connection) CreateVertex(dbName, graphName, collName string, data interface{}, config *CreateVertexConfig) (r CreateVertexResult, rc int, err error) {
 	path := buildPath(pathConfig{
 		dbName:      dbName,
 		pathFormat:  "/_api/gharial/%s/vertex/%s",
@@ -33,8 +39,8 @@ func (c *Connection) CreateVertex(dbName, graphName, collName string, data inter
 	})
 
 	var body struct {
-		Vertex DocIDKeyRev `json:"vertex"`
-		Code   int         `json:"code"`
+		Vertex CreateVertexResult `json:"vertex"`
+		Code   int                `json:"code"`
 	}
 	_, err = c.send(http.MethodPost, path, nil, data, &body)
 	if err != nil {
@@ -127,7 +133,7 @@ func (c *ModifyVertexConfig) queryParams() url.Values {
 	return params
 }
 
-func (c *Connection) ModifyVertex(dbName, graphName, collName, vertexKey string, data interface{}, config *ModifyVertexConfig) (vertex ModifyVertexResult, rc int, err error) {
+func (c *Connection) ModifyVertex(dbName, graphName, collName, vertexKey string, data interface{}, config *ModifyVertexConfig) (r ModifyVertexResult, rc int, err error) {
 	path := buildPath(pathConfig{
 		dbName:      dbName,
 		pathFormat:  "/_api/gharial/%s/vertex/%s/%s",
@@ -185,7 +191,7 @@ func (c *ReplaceVertexConfig) queryParams() url.Values {
 	return params
 }
 
-func (c *Connection) ReplaceVertex(dbName, graphName, collName, vertexKey string, data interface{}, config *ReplaceVertexConfig) (vertex ReplaceVertexResult, rc int, err error) {
+func (c *Connection) ReplaceVertex(dbName, graphName, collName, vertexKey string, data interface{}, config *ReplaceVertexConfig) (r ReplaceVertexResult, rc int, err error) {
 	path := buildPath(pathConfig{
 		dbName:      dbName,
 		pathFormat:  "/_api/gharial/%s/vertex/%s/%s",

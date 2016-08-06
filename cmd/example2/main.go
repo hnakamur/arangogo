@@ -128,10 +128,9 @@ func run(username, password string) (err error) {
 	}
 
 	collName := "startVertices"
-	waitForSync := true
 	createVertexRes, rc, err := c.CreateVertex(dbName, graphName, collName,
 		map[string]string{"name": "Francis"},
-		&ara.CreateVertexConfig{WaitForSync: &waitForSync})
+		&ara.CreateVertexConfig{WaitForSync: ara.TruePtr()})
 	if err != nil {
 		return err
 	}
