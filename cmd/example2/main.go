@@ -197,7 +197,14 @@ func run(username, password string) (err error) {
 	}
 	log.Printf("GetEdge. edge=%v, rc=%d", edge, rc)
 
-	removed, rc, err := c.RemoveVertex(dbName, graphName, collName, createVertexRes.Key,
+	removed, rc, err := c.RemoveEdge(dbName, graphName, collName, createEdgeRes.Key,
+		&ara.RemoveEdgeConfig{WaitForSync: ara.FalsePtr()})
+	if err != nil {
+		return err
+	}
+	log.Printf("RemoveEdge. removed=%v, rc=%d", removed, rc)
+
+	removed, rc, err = c.RemoveVertex(dbName, graphName, collName, createVertexRes.Key,
 		&ara.RemoveVertexConfig{WaitForSync: ara.FalsePtr()})
 	if err != nil {
 		return err

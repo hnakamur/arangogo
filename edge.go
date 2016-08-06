@@ -195,53 +195,53 @@ func (c *Connection) ReplaceEdge(dbName, graphName, collName, edgeKey string, da
 	return body.Edge, body.Code, nil
 }
 
-//type RemoveVertexConfig struct {
-//	WaitForSync *bool
-//	IfMatch     string
-//}
-//
-//func (c *RemoveVertexConfig) header() http.Header {
-//	if c == nil {
-//		return nil
-//	}
-//
-//	var header http.Header
-//	if c.IfMatch != "" {
-//		header = make(http.Header)
-//		header.Set("if-match", c.IfMatch)
-//		return header
-//	}
-//	return nil
-//}
-//
-//func (c *RemoveVertexConfig) queryParams() url.Values {
-//	if c == nil {
-//		return nil
-//	}
-//
-//	var params url.Values
-//	if c.WaitForSync != nil {
-//		params = make(url.Values)
-//		params.Set("waitForSync", strconv.FormatBool(*c.WaitForSync))
-//	}
-//	return params
-//}
-//
-//func (c *Connection) RemoveVertex(dbName, graphName, collName, vertexKey string, config *RemoveVertexConfig) (removed bool, rc int, err error) {
-//	path := buildPath(pathConfig{
-//		dbName:      dbName,
-//		pathFormat:  "/_api/gharial/%s/vertex/%s/%s",
-//		pathParams:  []interface{}{graphName, collName, vertexKey},
-//		queryParams: config.queryParams(),
-//	})
-//
-//	var body struct {
-//		Removed bool `json:"removed"`
-//		Code    int  `json:"code"`
-//	}
-//	_, err = c.send(http.MethodDelete, path, config.header(), nil, &body)
-//	if err != nil {
-//		return body.Removed, 0, fmt.Errorf("failed to remove vertex: %v", err)
-//	}
-//	return body.Removed, body.Code, nil
-//}
+type RemoveEdgeConfig struct {
+	WaitForSync *bool
+	IfMatch     string
+}
+
+func (c *RemoveEdgeConfig) header() http.Header {
+	if c == nil {
+		return nil
+	}
+
+	var header http.Header
+	if c.IfMatch != "" {
+		header = make(http.Header)
+		header.Set("if-match", c.IfMatch)
+		return header
+	}
+	return nil
+}
+
+func (c *RemoveEdgeConfig) queryParams() url.Values {
+	if c == nil {
+		return nil
+	}
+
+	var params url.Values
+	if c.WaitForSync != nil {
+		params = make(url.Values)
+		params.Set("waitForSync", strconv.FormatBool(*c.WaitForSync))
+	}
+	return params
+}
+
+func (c *Connection) RemoveEdge(dbName, graphName, collName, edgeKey string, config *RemoveEdgeConfig) (removed bool, rc int, err error) {
+	path := buildPath(pathConfig{
+		dbName:      dbName,
+		pathFormat:  "/_api/gharial/%s/edge/%s/%s",
+		pathParams:  []interface{}{graphName, collName, edgeKey},
+		queryParams: config.queryParams(),
+	})
+
+	var body struct {
+		Removed bool `json:"removed"`
+		Code    int  `json:"code"`
+	}
+	_, err = c.send(http.MethodDelete, path, config.header(), nil, &body)
+	if err != nil {
+		return body.Removed, 0, fmt.Errorf("failed to remove edge: %v", err)
+	}
+	return body.Removed, body.Code, nil
+}
