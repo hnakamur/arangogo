@@ -126,7 +126,7 @@ func (c *Connection) ListVertexCollections(dbName, graphName string) (collection
 	return body.Collections, body.Code, nil
 }
 
-type Graph struct {
+type AddVertexCollectionResult struct {
 	Name              string           `json:"name"`
 	EdgeDefinitions   []EdgeDefinition `json:"edgeDefinitions",omitempty`
 	OrphanCollections []string         `json:"orphanCollections",omitempty`
@@ -134,26 +134,40 @@ type Graph struct {
 	Rev               string           `json:"_rev"`
 }
 
-func (c *Connection) AddVertexCollection(dbName, graphName, collectionName string) (Graph, error) {
+func (c *Connection) AddVertexCollection(dbName, graphName, collectionName string) (r AddVertexCollectionResult, rc int, err error) {
+	path := buildPath(pathConfig{
+		dbName:     dbName,
+		pathFormat: "/_api/gharial/%s/vertex",
+		pathParams: []interface{}{graphName},
+	})
+
 	payload := struct {
 		Collection string `json:"collection"`
 	}{
 		Collection: collectionName,
 	}
 	var body struct {
-		Graph Graph `json:"graph"`
+		Graph AddVertexCollectionResult `json:"graph"`
+		Code  int                       `json:"code"`
 	}
-	u := dbPrefix(dbName) + "/_api/gharial/" + graphName + "/vertex"
-	_, err := c.send("POST", u, nil, payload, &body)
+	_, err = c.send(http.MethodPost, path, nil, payload, &body)
 	if err != nil {
-		return body.Graph, fmt.Errorf("failed to add vertex collections: %v", err)
+		return body.Graph, body.Code, fmt.Errorf("failed to add vertex collections: %v", err)
 	}
-	return body.Graph, nil
+	return body.Graph, body.Code, nil
 }
 
-func (c *Connection) RemoveVertexCollection(dbName, graphName, collectionName string) (Graph, error) {
+type RemoveVertexCollectionResult struct {
+	Name              string           `json:"name"`
+	EdgeDefinitions   []EdgeDefinition `json:"edgeDefinitions",omitempty`
+	OrphanCollections []string         `json:"orphanCollections",omitempty`
+	ID                string           `json:"_id"`
+	Rev               string           `json:"_rev"`
+}
+
+func (c *Connection) RemoveVertexCollection(dbName, graphName, collectionName string) (RemoveVertexCollectionResult, error) {
 	var body struct {
-		Graph Graph `json:"graph"`
+		Graph RemoveVertexCollectionResult `json:"graph"`
 	}
 	u := dbPrefix(dbName) + "/_api/gharial/" + graphName + "/vertex/" + collectionName
 	_, err := c.send("DELETE", u, nil, nil, &body)
@@ -175,9 +189,17 @@ func (c *Connection) ListEdgeDefinitions(dbName, graphName string) ([]string, er
 	return body.Collections, nil
 }
 
-func (c *Connection) AddEdgeDefinition(dbName, graphName string, edgeDefinition EdgeDefinition) (Graph, error) {
+type AddEdgeDefinitionResult struct {
+	Name              string           `json:"name"`
+	EdgeDefinitions   []EdgeDefinition `json:"edgeDefinitions",omitempty`
+	OrphanCollections []string         `json:"orphanCollections",omitempty`
+	ID                string           `json:"_id"`
+	Rev               string           `json:"_rev"`
+}
+
+func (c *Connection) AddEdgeDefinition(dbName, graphName string, edgeDefinition EdgeDefinition) (AddEdgeDefinitionResult, error) {
 	var body struct {
-		Graph Graph `json:"graph"`
+		Graph AddEdgeDefinitionResult `json:"graph"`
 	}
 	u := dbPrefix(dbName) + "/_api/gharial/" + graphName + "/edge"
 	_, err := c.send("POST", u, nil, edgeDefinition, &body)
@@ -187,9 +209,17 @@ func (c *Connection) AddEdgeDefinition(dbName, graphName string, edgeDefinition 
 	return body.Graph, nil
 }
 
-func (c *Connection) RemoveEdgeDefinition(dbName, graphName, definitionName string) (Graph, error) {
+type RemoveEdgeDefinitionResult struct {
+	Name              string           `json:"name"`
+	EdgeDefinitions   []EdgeDefinition `json:"edgeDefinitions",omitempty`
+	OrphanCollections []string         `json:"orphanCollections",omitempty`
+	ID                string           `json:"_id"`
+	Rev               string           `json:"_rev"`
+}
+
+func (c *Connection) RemoveEdgeDefinition(dbName, graphName, definitionName string) (RemoveEdgeDefinitionResult, error) {
 	var body struct {
-		Graph Graph `json:"graph"`
+		Graph RemoveEdgeDefinitionResult `json:"graph"`
 	}
 	u := dbPrefix(dbName) + "/_api/gharial/" + graphName + "/edge/" + definitionName
 	_, err := c.send("DELETE", u, nil, nil, &body)

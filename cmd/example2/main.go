@@ -95,13 +95,13 @@ func run(username, password string) (err error) {
 	}
 	log.Printf("ListVertexCollections. collection=%s, rc=%d", collections, rc)
 
-	graph2, err := c.AddVertexCollection(dbName, graphName, "otherVertices")
+	addVertexCollectionRes, rc, err := c.AddVertexCollection(dbName, graphName, "otherVertices")
 	if err != nil {
 		return err
 	}
-	log.Printf("AddVertexCollection. graph=%v", graph2)
+	log.Printf("AddVertexCollection. addVertexCollectionRes=%v, rc=%d", addVertexCollectionRes, rc)
 
-	graph2, err = c.AddEdgeDefinition(dbName, graphName, ara.EdgeDefinition{
+	addEdgeDefinitionRes, err := c.AddEdgeDefinition(dbName, graphName, ara.EdgeDefinition{
 		Collection: "works_in",
 		From: []string{
 			"female",
@@ -114,7 +114,7 @@ func run(username, password string) (err error) {
 	if err != nil {
 		return err
 	}
-	log.Printf("AddEdgeDefinition. graph=%v", graph2)
+	log.Printf("AddEdgeDefinition. addEdgeDefinitionRes=%v", addEdgeDefinitionRes)
 
 	collections, err = c.ListEdgeDefinitions(dbName, graphName)
 	if err != nil {
@@ -207,17 +207,17 @@ func run(username, password string) (err error) {
 	}
 	log.Printf("RemoveVertex. removed=%v, rc=%d", removed, rc)
 
-	graph2, err = c.RemoveEdgeDefinition(dbName, graphName, "works_in")
+	removeEdgeDefinitionRes, err := c.RemoveEdgeDefinition(dbName, graphName, "works_in")
 	if err != nil {
 		return err
 	}
-	log.Printf("RemoveEdgeDefinition. graph=%v", graph2)
+	log.Printf("RemoveEdgeDefinition. removeEdgeDefinitionRes=%v", removeEdgeDefinitionRes)
 
-	graph2, err = c.RemoveVertexCollection(dbName, graphName, "otherVertices")
+	removeVertexCollectionRes, err := c.RemoveVertexCollection(dbName, graphName, "otherVertices")
 	if err != nil {
 		return err
 	}
-	log.Printf("RemoveVertexCollection. graph=%v", graph2)
+	log.Printf("RemoveVertexCollection. removeVertexCollectionRes=%v", removeVertexCollectionRes)
 
 	removed, rc, err = c.DropGraph(dbName, graphName, nil)
 	if err != nil {
