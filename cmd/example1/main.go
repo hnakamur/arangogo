@@ -38,9 +38,9 @@ func run(username, password string) (err error) {
 	if !contains(databases, dbName) {
 		err = c.CreateDatabase(ara.CreateDatabaseConfig{
 			Name: dbName,
-			Users: []map[string]interface{}{
-				map[string]interface{}{
-					"username": "root",
+			Users: []ara.CreateDatabaseConfigUser{
+				{
+					Username: "root",
 				},
 			},
 		})
