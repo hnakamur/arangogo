@@ -129,16 +129,23 @@ func run(username, password string) (err error) {
 
 	collName := "startVertices"
 	waitForSync := true
-	idKeyRev, rc, err := c.CreateVertex(dbName, graphName, collName,
+	createVertexRes, rc, err := c.CreateVertex(dbName, graphName, collName,
 		map[string]string{"name": "Francis"},
 		&ara.CreateVertexConfig{WaitForSync: &waitForSync})
 	if err != nil {
 		return err
 	}
-	log.Printf("CreateVertex. idKeyRev=%v, rc=%d", idKeyRev, rc)
+	log.Printf("CreateVertex. createVertexRes=%v, rc=%d", createVertexRes, rc)
+
+	modifyVertexRes, rc, err := c.ModifyVertex(dbName, graphName, collName, createVertexRes.Key,
+		map[string]interface{}{"age": 26}, &ara.ModifyVertexConfig{WaitForSync: ara.TruePtr()})
+	if err != nil {
+		return err
+	}
+	log.Printf("ModifyVertex. modifyVertexRes=%v, rc=%d", modifyVertexRes, rc)
 
 	var vertex interface{}
-	rc, err = c.GetVertex(dbName, graphName, collName, idKeyRev.Key, nil, &vertex)
+	rc, err = c.GetVertex(dbName, graphName, collName, createVertexRes.Key, nil, &vertex)
 	if err != nil {
 		return err
 	}
