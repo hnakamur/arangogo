@@ -213,11 +213,13 @@ func run(username, password string) (err error) {
 	}
 	log.Printf("RemoveEdgeDefinition. removeEdgeDefinitionRes=%v", removeEdgeDefinitionRes)
 
-	removeVertexCollectionRes, err := c.RemoveVertexCollection(dbName, graphName, "otherVertices")
+	removeVertexCollectionRes, rc, err := c.RemoveVertexCollection(dbName, graphName, "otherVertices",
+		&ara.RemoveVertexCollectionConfig{WaitForSync: ara.TruePtr()})
 	if err != nil {
 		return err
 	}
-	log.Printf("RemoveVertexCollection. removeVertexCollectionRes=%v", removeVertexCollectionRes)
+	// NOTE: rc was 202 for waitForSync=true. should have been 201.
+	log.Printf("RemoveVertexCollection. removeVertexCollectionRes=%v, rc=%d", removeVertexCollectionRes, rc)
 
 	removed, rc, err = c.DropGraph(dbName, graphName, nil)
 	if err != nil {

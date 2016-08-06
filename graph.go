@@ -165,16 +165,40 @@ type RemoveVertexCollectionResult struct {
 	Rev               string           `json:"_rev"`
 }
 
-func (c *Connection) RemoveVertexCollection(dbName, graphName, collectionName string) (RemoveVertexCollectionResult, error) {
+type RemoveVertexCollectionConfig struct {
+	WaitForSync *bool
+}
+
+func (c *RemoveVertexCollectionConfig) urlValues() url.Values {
+	if c == nil {
+		return nil
+	}
+
+	var params url.Values
+	if c.WaitForSync != nil {
+		params = make(url.Values)
+		params.Set("waitForSync", strconv.FormatBool(*c.WaitForSync))
+	}
+	return params
+}
+
+func (c *Connection) RemoveVertexCollection(dbName, graphName, collectionName string, config *RemoveVertexCollectionConfig) (r RemoveVertexCollectionResult, rc int, err error) {
+	path := buildPath(pathConfig{
+		dbName:      dbName,
+		pathFormat:  "/_api/gharial/%s/vertex/%s",
+		pathParams:  []interface{}{graphName, collectionName},
+		queryParams: config.urlValues(),
+	})
+
 	var body struct {
 		Graph RemoveVertexCollectionResult `json:"graph"`
+		Code  int                          `json:"code"`
 	}
-	u := dbPrefix(dbName) + "/_api/gharial/" + graphName + "/vertex/" + collectionName
-	_, err := c.send("DELETE", u, nil, nil, &body)
+	_, err = c.send(http.MethodDelete, path, nil, nil, &body)
 	if err != nil {
-		return body.Graph, fmt.Errorf("failed to remove vertex collections: %v", err)
+		return body.Graph, 0, fmt.Errorf("failed to remove vertex collections: %v", err)
 	}
-	return body.Graph, nil
+	return body.Graph, body.Code, nil
 }
 
 func (c *Connection) ListEdgeDefinitions(dbName, graphName string) ([]string, error) {
