@@ -98,34 +98,69 @@ func (c *Connection) CreateDocuments(dbName, collName string, data interface{}, 
 	return body, resp.rawResponse.StatusCode, nil
 }
 
-type DeleteDocumentConfig struct {
+type RemoveDocumentConfig struct {
 	WaitForSync *bool
 	ReturnOld   *bool
 	IfMatch     string
 }
 
-func (c *Connection) DeleteDocument(dbName, collName, key string, config *DeleteDocumentConfig) error {
-	u := dbPrefix(dbName) + "/_api/document/" + collName + "/" + key
-	v := url.Values{}
+func (c *RemoveDocumentConfig) header() http.Header {
+	if c == nil {
+		return nil
+	}
 	var header http.Header
-	if config != nil {
-		if config.WaitForSync != nil {
-			v.Set("waitForSync", strconv.FormatBool(*config.WaitForSync))
-		}
-		if config.ReturnOld != nil {
-			v.Set("returnOld", strconv.FormatBool(*config.ReturnOld))
-		}
-		if config.IfMatch != "" {
-			header = make(http.Header)
-			header.Set("if-match", config.IfMatch)
-		}
+	if c.IfMatch != "" {
+		header = make(http.Header)
+		header.Set("if-match", c.IfMatch)
+		return header
 	}
-	if len(v) > 0 {
-		u = u + "?" + v.Encode()
-	}
-	_, err := c.send("DELETE", u, header, nil, nil)
-	if err != nil {
-		return fmt.Errorf("failed to delete document: %v", err)
-	}
+
 	return nil
+}
+
+func (c *RemoveDocumentConfig) queryParams() url.Values {
+	if c == nil {
+		return nil
+	}
+
+	var params url.Values
+	if c.WaitForSync != nil || c.ReturnOld != nil {
+		params = make(url.Values)
+	}
+	if c.WaitForSync != nil {
+		params.Set("waitForSync", strconv.FormatBool(*c.WaitForSync))
+	}
+	if c.ReturnOld != nil {
+		params.Set("returnOld", strconv.FormatBool(*c.ReturnOld))
+	}
+	return params
+}
+
+func (c *Connection) RemoveDocument(dbName, collName, key string, config *RemoveDocumentConfig, docPtr interface{}) (doc Document, rc int, err error) {
+	path := buildPath(pathConfig{
+		dbName:      dbName,
+		pathFormat:  "/_api/document/%s/%s",
+		pathParams:  []interface{}{collName, key},
+		queryParams: config.queryParams(),
+	})
+
+	var body struct {
+		ID  string      `json:"_id"`
+		Key string      `json:"_key"`
+		Rev string      `json:"_rev"`
+		Old interface{} `json:"old"`
+	}
+	if docPtr != nil {
+		body.Old = docPtr
+	}
+	resp, err := c.send(http.MethodDelete, path, config.header(), nil, &body)
+	if err != nil {
+		return doc, resp.rawResponse.StatusCode, fmt.Errorf("failed to remove document: %v", err)
+	}
+	doc = Document{
+		ID:  body.ID,
+		Key: body.Key,
+		Rev: body.Rev,
+	}
+	return doc, resp.rawResponse.StatusCode, nil
 }

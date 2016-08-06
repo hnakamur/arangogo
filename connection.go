@@ -195,14 +195,6 @@ type response struct {
 	body        []byte
 }
 
-func dbPrefix(name string) string {
-	if name == SystemDatabaseName || name == "" {
-		return ""
-	} else {
-		return "/_db/" + name
-	}
-}
-
 type pathConfig struct {
 	dbName      string
 	pathFormat  string

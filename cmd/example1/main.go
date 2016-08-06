@@ -104,11 +104,18 @@ func run(username, password string) (err error) {
 	}
 	log.Printf("CreateDocuments. docs=%v, rc=%d", docs, rc)
 
-	err = c.DeleteDocument(dbName, collName, doc.Key, &ara.DeleteDocumentConfig{IfMatch: doc.Rev})
+	var docBody2 struct {
+		ID   string `json:"_id"`
+		Key  string `json:"_key"`
+		Rev  string `json:"_rev"`
+		Name string `json:"name"`
+	}
+	doc, rc, err = c.RemoveDocument(dbName, collName, doc.Key, &ara.RemoveDocumentConfig{IfMatch: doc.Rev, ReturnOld: ara.TruePtr()}, &docBody2)
 	if err != nil {
 		log.Printf("err=%v", err)
 		return err
 	}
+	log.Printf("RemoveDocument. doc=%v, rc=%v, docBody=%v", doc, rc, docBody2)
 
 	edgeCollName := "myedges"
 	createCollectionRes, rc, err = c.CreateCollection(dbName, ara.CreateCollectionConfig{Name: edgeCollName})
