@@ -49,45 +49,45 @@ func (c *Connection) CreateEdge(dbName, graphName, collName string, data interfa
 	return body.Edge, body.Code, nil
 }
 
-//type GetVertexConfig struct {
-//	IfMatch string
-//}
-//
-//func (c *GetVertexConfig) header() http.Header {
-//	if c == nil {
-//		return nil
-//	}
-//	var header http.Header
-//	if c.IfMatch != "" {
-//		header = make(http.Header)
-//		header.Set("if-match", c.IfMatch)
-//		return header
-//	}
-//
-//	return nil
-//}
-//
-//func (c *Connection) GetVertex(dbName, graphName, collName, vertexKey string, config *GetVertexConfig, vertexPtr interface{}) (rc int, err error) {
-//	path := buildPath(pathConfig{
-//		dbName:     dbName,
-//		pathFormat: "/_api/gharial/%s/vertex/%s/%s",
-//		pathParams: []interface{}{graphName, collName, vertexKey},
-//	})
-//
-//	var body struct {
-//		Vertex interface{} `json:"vertex"`
-//		Code   int         `json:"code"`
-//	}
-//	if vertexPtr != nil {
-//		body.Vertex = vertexPtr
-//	}
-//	_, err = c.send("GET", path, config.header(), nil, &body)
-//	if err != nil {
-//		return 0, fmt.Errorf("failed to create vertex: %v", err)
-//	}
-//	return body.Code, nil
-//}
-//
+type GetEdgeConfig struct {
+	IfMatch string
+}
+
+func (c *GetEdgeConfig) header() http.Header {
+	if c == nil {
+		return nil
+	}
+	var header http.Header
+	if c.IfMatch != "" {
+		header = make(http.Header)
+		header.Set("if-match", c.IfMatch)
+		return header
+	}
+
+	return nil
+}
+
+func (c *Connection) GetEdge(dbName, graphName, collName, edgeKey string, config *GetEdgeConfig, edgePtr interface{}) (rc int, err error) {
+	path := buildPath(pathConfig{
+		dbName:     dbName,
+		pathFormat: "/_api/gharial/%s/edge/%s/%s",
+		pathParams: []interface{}{graphName, collName, edgeKey},
+	})
+
+	var body struct {
+		Edge interface{} `json:"edge"`
+		Code int         `json:"code"`
+	}
+	if edgePtr != nil {
+		body.Edge = edgePtr
+	}
+	_, err = c.send(http.MethodGet, path, config.header(), nil, &body)
+	if err != nil {
+		return 0, fmt.Errorf("failed to get edge: %v", err)
+	}
+	return body.Code, nil
+}
+
 //type ModifyVertexResult struct {
 //	ID     string `json:"_id"`
 //	Key    string `json:"_key"`

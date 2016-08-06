@@ -78,7 +78,7 @@ func (c *Connection) GetVertex(dbName, graphName, collName, vertexKey string, co
 	}
 	_, err = c.send("GET", path, config.header(), nil, &body)
 	if err != nil {
-		return 0, fmt.Errorf("failed to create vertex: %v", err)
+		return 0, fmt.Errorf("failed to get vertex: %v", err)
 	}
 	return body.Code, nil
 }
