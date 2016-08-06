@@ -200,7 +200,58 @@ func (c *Connection) ReplaceVertex(dbName, graphName, collName, vertexKey string
 	}
 	_, err = c.send(http.MethodPut, path, config.header(), data, &body)
 	if err != nil {
-		return body.Vertex, 0, fmt.Errorf("failed to modify vertex: %v", err)
+		return body.Vertex, 0, fmt.Errorf("failed to replace vertex: %v", err)
 	}
 	return body.Vertex, body.Code, nil
+}
+
+type RemoveVertexConfig struct {
+	WaitForSync *bool
+	IfMatch     string
+}
+
+func (c *RemoveVertexConfig) header() http.Header {
+	if c == nil {
+		return nil
+	}
+
+	var header http.Header
+	if c.IfMatch != "" {
+		header = make(http.Header)
+		header.Set("if-match", c.IfMatch)
+		return header
+	}
+	return nil
+}
+
+func (c *RemoveVertexConfig) queryParams() url.Values {
+	if c == nil {
+		return nil
+	}
+
+	var params url.Values
+	if c.WaitForSync != nil {
+		params = make(url.Values)
+		params.Set("waitForSync", strconv.FormatBool(*c.WaitForSync))
+	}
+	return params
+}
+
+func (c *Connection) RemoveVertex(dbName, graphName, collName, vertexKey string, config *RemoveVertexConfig) (removed bool, rc int, err error) {
+	path := buildPath(pathConfig{
+		dbName:      dbName,
+		pathFormat:  "/_api/gharial/%s/vertex/%s/%s",
+		pathParams:  []interface{}{graphName, collName, vertexKey},
+		queryParams: config.queryParams(),
+	})
+
+	var body struct {
+		Removed bool `json:"removed"`
+		Code    int  `json:"code"`
+	}
+	_, err = c.send(http.MethodDelete, path, config.header(), nil, &body)
+	if err != nil {
+		return body.Removed, 0, fmt.Errorf("failed to remove vertex: %v", err)
+	}
+	return body.Removed, body.Code, nil
 }
