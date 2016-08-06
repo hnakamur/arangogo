@@ -7,33 +7,31 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
 )
 
 type Config struct {
 	URL           string
-	DatabaseName  string
 	ArangoVersion int
 	Username      string
 	Password      string
 	Header        http.Header
+	Logger        Logger
 }
 
 type Connection struct {
 	client        *http.Client
 	url           string
-	name          string
 	arangoVersion int
 	username      string
 	password      string
 	header        http.Header
+	logger        Logger
 }
 
 const (
 	defaultURL          = "http://localhost:8529"
-	defaultDatabaseName = "_system"
 	defaultArangoVesion = 30000
 )
 
@@ -43,7 +41,6 @@ func NewConnection(config *Config) (*Connection, error) {
 	c := &Connection{
 		client:        new(http.Client),
 		url:           defaultURL,
-		name:          defaultDatabaseName,
 		arangoVersion: defaultArangoVesion,
 	}
 	if config != nil {
@@ -53,9 +50,6 @@ func NewConnection(config *Config) (*Connection, error) {
 				return nil, err
 			}
 			c.url = config.URL
-		}
-		if config.DatabaseName != "" {
-			c.name = config.DatabaseName
 		}
 		if config.ArangoVersion != 0 {
 			c.arangoVersion = config.ArangoVersion
@@ -69,6 +63,7 @@ func NewConnection(config *Config) (*Connection, error) {
 		if config.Header != nil {
 			c.header = config.Header
 		}
+		c.logger = config.Logger
 	}
 	return c, nil
 }
@@ -123,7 +118,8 @@ func (c *Connection) send(method, path string, header http.Header, payload, resp
 		return nil, fmt.Errorf("failed to read response body: %v", err)
 	}
 	resp.Body = ioutil.NopCloser(bytes.NewBuffer(b))
-	if true {
+
+	if c.logger != nil {
 		var reqH []byte
 		for k, vv := range req.Header {
 			for _, v := range vv {
@@ -145,8 +141,9 @@ func (c *Connection) send(method, path string, header http.Header, payload, resp
 		if len(b) > 0 {
 			bodyStr = string(b)
 		}
-		log.Printf("Connection send. method=%s, url=%s%s, payload=%s, status=%s%s, resBody=%s", method, url, string(reqH), payloadStr, resp.Status, respH, bodyStr)
+		c.logger.Log(fmt.Sprintf("Connection send. method=%s, url=%s%s, payload=%s, status=%s%s, resBody=%s", method, url, string(reqH), payloadStr, resp.Status, respH, bodyStr))
 	}
+
 	if len(b) > 0 {
 		errBody := new(struct {
 			Error        bool   `json:"error"`

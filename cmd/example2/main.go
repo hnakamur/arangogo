@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"os"
 
 	ara "github.com/hnakamur/arangogo"
 )
@@ -23,7 +24,11 @@ func contains(array []string, elem string) bool {
 }
 
 func run(username, password string) (err error) {
-	c, err := ara.NewConnection(&ara.Config{Username: username, Password: password})
+	c, err := ara.NewConnection(&ara.Config{
+		Username: username,
+		Password: password,
+		Logger:   ara.NewLoggerWithStdLogger(log.New(os.Stdout, "", log.LstdFlags)),
+	})
 	if err != nil {
 		return err
 	}
