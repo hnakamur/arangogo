@@ -1,6 +1,9 @@
 package arangogo
 
-import "fmt"
+import (
+	"fmt"
+	"net/http"
+)
 
 type Collection struct {
 	ID       string `json:"id"`
@@ -24,12 +27,46 @@ type CreateCollectionConfig struct {
 	IndexBuckets   int                    `json:"indexBuckets,omitempty"`
 }
 
-func (c *Connection) CreateCollection(dbName string, config CreateCollectionConfig) error {
-	_, err := c.send("POST", dbPrefix(dbName)+"/_api/collection", nil, config, nil)
-	if err != nil {
-		return fmt.Errorf("failed to create collection: %v", err)
+type CreateCollectionResult struct {
+	ID          string
+	Name        string
+	WaitForSync bool
+	IsVolatile  bool
+	IsSystem    bool
+	Status      int
+	Type        int
+}
+
+func (c *Connection) CreateCollection(dbName string, config CreateCollectionConfig) (r CreateCollectionResult, rc int, err error) {
+	path := buildPath(pathConfig{
+		dbName:     dbName,
+		pathFormat: "/_api/collection",
+	})
+
+	var body struct {
+		ID          string `json:"id"`
+		Name        string `json:"name"`
+		WaitForSync bool   `json:"waitForSync"`
+		IsVolatile  bool   `json:"isVolatile"`
+		IsSystem    bool   `json:"isSystem"`
+		Status      int    `json:"status"`
+		Type        int    `json:"type"`
+		Code        int    `json:"code"`
 	}
-	return nil
+	_, err = c.send(http.MethodPost, path, nil, config, &body)
+	if err != nil {
+		return r, body.Code, fmt.Errorf("failed to create collection: %v", err)
+	}
+	r = CreateCollectionResult{
+		ID:          body.ID,
+		Name:        body.Name,
+		WaitForSync: body.WaitForSync,
+		IsVolatile:  body.IsVolatile,
+		IsSystem:    body.IsSystem,
+		Status:      body.Status,
+		Type:        body.Type,
+	}
+	return r, body.Code, nil
 }
 
 func (c *Connection) DeleteCollection(dbName string, name string) error {

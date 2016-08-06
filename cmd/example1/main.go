@@ -63,10 +63,11 @@ func run(username, password string) (err error) {
 	}()
 
 	collName := "mycollection"
-	err = c.CreateCollection(dbName, ara.CreateCollectionConfig{Name: collName})
+	createCollectionRes, rc, err := c.CreateCollection(dbName, ara.CreateCollectionConfig{Name: collName})
 	if err != nil {
 		return err
 	}
+	log.Printf("CreateCollection. res=%v, rc=%d", createCollectionRes, rc)
 
 	collections, err := c.ListCollections(dbName)
 	if err != nil {
@@ -106,10 +107,11 @@ func run(username, password string) (err error) {
 	}
 
 	edgeCollName := "myedges"
-	err = c.CreateCollection(dbName, ara.CreateCollectionConfig{Name: edgeCollName})
+	createCollectionRes, rc, err = c.CreateCollection(dbName, ara.CreateCollectionConfig{Name: edgeCollName})
 	if err != nil {
 		return err
 	}
+	log.Printf("CreateCollection. res=%v, rc=%d", createCollectionRes, rc)
 	edges := []map[string]interface{}{
 		{
 			"label": docs[0].Key + "->" + docs[1].Key,
