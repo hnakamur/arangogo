@@ -137,8 +137,8 @@ func run(username, password string) (err error) {
 	}
 	log.Printf("CreateVertex. idKeyRev=%v, rc=%d", idKeyRev, rc)
 
-	vertex, rc, err := c.GetVertex(dbName, graphName, collName, idKeyRev.Key,
-		nil)
+	var vertex interface{}
+	rc, err = c.GetVertex(dbName, graphName, collName, idKeyRev.Key, nil, &vertex)
 	if err != nil {
 		return err
 	}

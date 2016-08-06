@@ -62,20 +62,22 @@ func (c *GetVertexConfig) header() http.Header {
 	return nil
 }
 
-func (c *Connection) GetVertex(dbName, graphName, collName, vertexKey string, config *GetVertexConfig) (vertex interface{}, rc int, err error) {
+func (c *Connection) GetVertex(dbName, graphName, collName, vertexKey string, config *GetVertexConfig, vertexPtr interface{}) (rc int, err error) {
 	path := buildPath(pathConfig{
 		dbName:     dbName,
 		pathFormat: "/_api/gharial/%s/vertex/%s/%s",
 		pathParams: []interface{}{graphName, collName, vertexKey},
 	})
 
-	var body struct {
+	body := struct {
 		Vertex interface{} `json:"vertex"`
 		Code   int         `json:"code"`
+	}{
+		Vertex: vertexPtr,
 	}
 	_, err = c.send("GET", path, config.header(), nil, &body)
 	if err != nil {
-		return body.Vertex, 0, fmt.Errorf("failed to create vertex: %v", err)
+		return 0, fmt.Errorf("failed to create vertex: %v", err)
 	}
-	return body.Vertex, body.Code, nil
+	return body.Code, nil
 }
