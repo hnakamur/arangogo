@@ -94,15 +94,21 @@ func (c *Connection) DropCollection(dbName, collectionName string) (r DropCollec
 	return r, body.Code, nil
 }
 
-func (c *Connection) ListCollections(dbName string) ([]Collection, error) {
+func (c *Connection) ListCollections(dbName string) (r []Collection, rc int, err error) {
+	path := buildPath(pathConfig{
+		dbName:     dbName,
+		pathFormat: "/_api/collection",
+	})
+
 	body := new(struct {
 		Result []Collection `json:"result"`
+		Code   int          `json:"code"`
 	})
-	_, err := c.send("GET", dbPrefix(dbName)+"/_api/collection", nil, nil, body)
+	_, err = c.send(http.MethodGet, path, nil, nil, body)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get collection list: %v", err)
+		return nil, body.Code, fmt.Errorf("failed to list collections: %v", err)
 	}
-	return body.Result, nil
+	return body.Result, body.Code, nil
 }
 
 func (c *Connection) TruncateCollection(dbName, collectionName string) (r Collection, rc int, err error) {

@@ -69,13 +69,11 @@ func run(username, password string) (err error) {
 	}
 	log.Printf("CreateCollection. res=%v, rc=%d", createCollectionRes, rc)
 
-	collections, err := c.ListCollections(dbName)
+	collections, rc, err := c.ListCollections(dbName)
 	if err != nil {
 		return err
 	}
-	for _, c := range collections {
-		log.Printf("collection=%v", c)
-	}
+	log.Printf("ListCollections. res=%v, rc=%d", collections, rc)
 
 	data := map[string]interface{}{
 		"name": "Alice",
