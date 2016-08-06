@@ -159,6 +159,17 @@ func run(username, password string) (err error) {
 	}
 	log.Printf("GetVertex. vertex=%v, rc=%d", vertex, rc)
 
+	createEdgeRes, rc, err := c.CreateEdge(dbName, graphName, collName,
+		map[string]interface{}{
+			"type":  "friend",
+			"_from": "female/alice",
+			"_to":   "female/diana",
+		}, &ara.CreateEdgeConfig{WaitForSync: ara.TruePtr()})
+	if err != nil {
+		return err
+	}
+	log.Printf("CreateEdge. createEdgeRes=%v, rc=%d", createEdgeRes, rc)
+
 	removed, rc, err := c.RemoveVertex(dbName, graphName, collName, createVertexRes.Key,
 		&ara.RemoveVertexConfig{WaitForSync: ara.FalsePtr()})
 	if err != nil {
