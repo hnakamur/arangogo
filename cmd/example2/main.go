@@ -179,6 +179,17 @@ func run(username, password string) (err error) {
 	}
 	log.Printf("ModifyEdge. modifyEdgeRes=%v, rc=%d", modifyEdgeRes, rc)
 
+	replaceEdgeRes, rc, err := c.ReplaceEdge(dbName, graphName, collName, createEdgeRes.Key,
+		map[string]interface{}{
+			"type":  "divorced",
+			"_from": "female/alice",
+			"_to":   "male/bob",
+		}, &ara.ReplaceEdgeConfig{WaitForSync: ara.TruePtr(), IfMatch: modifyEdgeRes.Rev})
+	if err != nil {
+		return err
+	}
+	log.Printf("ReplaceEdge. replaceEdgeRes=%v, rc=%d", replaceEdgeRes, rc)
+
 	var edge interface{}
 	rc, err = c.GetEdge(dbName, graphName, collName, createEdgeRes.Key, nil, &edge)
 	if err != nil {
