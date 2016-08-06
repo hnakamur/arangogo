@@ -3,6 +3,7 @@ package arangogo
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -147,11 +148,21 @@ func (c *Connection) send(method, path string, header http.Header, payload, resp
 	}
 	if len(b) > 0 {
 		errBody := new(struct {
-			Error bool `json:"error"`
+			Error        bool   `json:"error"`
+			ErrorNum     int    `json:"errorNum"`
+			ErrorMessage string `json:"errorMessage"`
 		})
 		err2 := json.Unmarshal(b, errBody)
 		if err2 == nil && errBody.Error {
-			return nil, fmt.Errorf("error returned from ArangoDB API: status=%s, body=%s", resp.Status, string(b))
+			msg := fmt.Sprintf("error from ArangoDB. status=%d", resp.StatusCode)
+			if errBody.ErrorNum != 0 {
+				msg += fmt.Sprintf(", errorNum=%d", errBody.ErrorNum)
+			}
+			if errBody.ErrorMessage != "" {
+				msg += fmt.Sprintf(", errorMessage=%s", errBody.ErrorMessage)
+			}
+			msg += fmt.Sprintf(", method=%s, url=%s", method, url)
+			return nil, errors.New(msg)
 		}
 
 		if respBody != nil {
