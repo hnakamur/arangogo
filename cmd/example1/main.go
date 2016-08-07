@@ -124,6 +124,20 @@ func run(username, password string) (err error) {
 	}
 	log.Printf("ReadDocument. docBody=%v, rc=%d", docBody2, rc)
 
+	rev, rc, err := c.ReadDocumentHeader(dbName, docs[0].ID, &ara.ReadDocumentHeaderConfig{IfMatch: docs[0].Rev})
+	if err != nil {
+		log.Printf("err=%v", err)
+		return err
+	}
+	log.Printf("ReadDocumentHeader. rev=%s, rc=%d", rev, rc)
+
+	rev, rc, err = c.ReadDocumentHeader(dbName, docs[0].ID, &ara.ReadDocumentHeaderConfig{IfNoneMatch: docs[0].Rev})
+	if err != nil {
+		log.Printf("err=%v", err)
+		return err
+	}
+	log.Printf("ReadDocumentHeader. rev=%s, rc=%d", rev, rc)
+
 	var docBody3 struct {
 		ID   string `json:"_id"`
 		Key  string `json:"_key"`

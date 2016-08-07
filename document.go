@@ -38,9 +38,46 @@ func (c *Connection) ReadDocument(dbName, documentHandle string, config *ReadDoc
 
 	resp, err := c.send(http.MethodGet, path, config.header(), nil, &documentPtr)
 	if err != nil {
-		return resp.StatusCode, fmt.Errorf("failed to get document: %v", err)
+		return resp.StatusCode, fmt.Errorf("failed to read document: %v", err)
 	}
 	return resp.StatusCode, nil
+}
+
+type ReadDocumentHeaderConfig struct {
+	IfNoneMatch string
+	IfMatch     string
+}
+
+func (c *ReadDocumentHeaderConfig) header() http.Header {
+	if c == nil {
+		return nil
+	}
+	var header http.Header
+	if c.IfNoneMatch != "" || c.IfMatch != "" {
+		header = make(http.Header)
+	}
+	if c.IfNoneMatch != "" {
+		header.Set("if-none-match", c.IfNoneMatch)
+	}
+	if c.IfMatch != "" {
+		header.Set("if-match", c.IfMatch)
+	}
+	return header
+}
+
+func (c *Connection) ReadDocumentHeader(dbName, documentHandle string, config *ReadDocumentHeaderConfig) (rev string, rc int, err error) {
+	path := buildPath(pathConfig{
+		dbName:     dbName,
+		pathFormat: "/_api/document/%s",
+		pathParams: []interface{}{documentHandle},
+	})
+
+	resp, err := c.send(http.MethodHead, path, config.header(), nil, nil)
+	rev = resp.Header.Get("ETag")
+	if err != nil {
+		return rev, resp.StatusCode, fmt.Errorf("failed to get document header: %v", err)
+	}
+	return rev, resp.StatusCode, nil
 }
 
 type Document struct {
