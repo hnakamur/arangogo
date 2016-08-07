@@ -109,18 +109,33 @@ func run(username, password string) (err error) {
 	}
 	log.Printf("CreateDocuments. docs=%v, rc=%d", docs, rc)
 
-	var docBody2 struct {
+	var docBody2 interface{}
+	rc, err = c.ReadDocument(dbName, docs[0].ID, &ara.ReadDocumentConfig{IfMatch: docs[0].Rev}, &docBody2)
+	if err != nil {
+		log.Printf("err=%v", err)
+		return err
+	}
+	log.Printf("ReadDocument. docBody=%v, rc=%d", docBody2, rc)
+
+	rc, err = c.ReadDocument(dbName, docs[0].ID, &ara.ReadDocumentConfig{IfNoneMatch: "0"}, &docBody2)
+	if err != nil {
+		log.Printf("err=%v", err)
+		return err
+	}
+	log.Printf("ReadDocument. docBody=%v, rc=%d", docBody2, rc)
+
+	var docBody3 struct {
 		ID   string `json:"_id"`
 		Key  string `json:"_key"`
 		Rev  string `json:"_rev"`
 		Name string `json:"name"`
 	}
-	doc, rc, err = c.RemoveDocument(dbName, collName, doc.Key, &ara.RemoveDocumentConfig{IfMatch: doc.Rev, ReturnOld: ara.TruePtr()}, &docBody2)
+	doc, rc, err = c.RemoveDocument(dbName, collName, doc.Key, &ara.RemoveDocumentConfig{IfMatch: doc.Rev, ReturnOld: ara.TruePtr()}, &docBody3)
 	if err != nil {
 		log.Printf("err=%v", err)
 		return err
 	}
-	log.Printf("RemoveDocument. doc=%v, rc=%v, docBody=%v", doc, rc, docBody2)
+	log.Printf("RemoveDocument. doc=%v, rc=%v, docBody=%v", doc, rc, docBody3)
 
 	edgeCollName := "myedges"
 	createCollectionRes, rc, err = c.CreateCollection(dbName, ara.CreateCollectionConfig{Name: edgeCollName})
