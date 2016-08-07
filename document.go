@@ -75,9 +75,54 @@ func (c *Connection) ReadDocumentHeader(dbName, documentHandle string, config *R
 	resp, err := c.send(http.MethodHead, path, config.header(), nil, nil)
 	rev = resp.Header.Get("ETag")
 	if err != nil {
-		return rev, resp.StatusCode, fmt.Errorf("failed to get document header: %v", err)
+		return rev, resp.StatusCode, fmt.Errorf("failed to read document header: %v", err)
 	}
 	return rev, resp.StatusCode, nil
+}
+
+const (
+	ListAllDocumentsTypeID   = "id"
+	ListAllDocumentsTypeKey  = "key"
+	ListAllDocumentsTypePath = "path"
+)
+
+type ListAllDocumentsConfig struct {
+	Type       string `json:"type,omitempty"`
+	Collection string `json:"collection"`
+}
+
+type ListAllDocumentsResultStats struct {
+	WritesExecuted int     `json:"writesExecuted"`
+	WritesIgnored  int     `json:"writesIgnored"`
+	ScannedFull    int     `json:"scannedFull"`
+	ScannedIndex   int     `json:"scannedIndex"`
+	Filtered       int     `json:"filtered"`
+	ExecutionTime  float64 `json:"executionTime"`
+}
+
+type ListAllDocumentsResult struct {
+	Result  []string `json:"result"`
+	HasMore bool     `json:"hasMore"`
+	Cached  bool     `json:"cached"`
+	Extra   struct {
+		Stats ListAllDocumentsResultStats `json:"stats"`
+	} `json:"extra"`
+}
+
+func (c *Connection) ListAllDocuments(dbName string, config ListAllDocumentsConfig) (r ListAllDocumentsResult, rc int, err error) {
+	path := buildPath(pathConfig{
+		dbName:     dbName,
+		pathFormat: "/_api/simple/all-keys",
+	})
+
+	resp, err := c.send(http.MethodPut, path, nil, config, &r)
+	if resp != nil {
+		rc = resp.StatusCode
+	}
+	if err != nil {
+		err = fmt.Errorf("failed to list all documents: %v", err)
+	}
+	return
 }
 
 type Document struct {

@@ -138,6 +138,19 @@ func run(username, password string) (err error) {
 	}
 	log.Printf("ReadDocumentHeader. rev=%s, rc=%d", rev, rc)
 
+	listAllDocumentsRes, rc, err := c.ListAllDocuments(dbName, ara.ListAllDocumentsConfig{Collection: collName})
+	if err != nil {
+		log.Printf("err=%v", err)
+		return err
+	}
+	log.Printf("ListAllDocuments. res=%v, rc=%d", listAllDocumentsRes, rc)
+
+	listAllDocumentsRes, rc, err = c.ListAllDocuments(dbName, ara.ListAllDocumentsConfig{Collection: "non-existing-collectionn"})
+	if err != nil {
+		log.Printf("err=%v", err)
+		// NOTE: This is an intentional error, so let's continue
+	}
+
 	var docBody3 struct {
 		ID   string `json:"_id"`
 		Key  string `json:"_key"`

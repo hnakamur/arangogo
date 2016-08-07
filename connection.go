@@ -109,13 +109,13 @@ func (c *Connection) send(method, path string, header http.Header, payload, resp
 
 	resp, err := c.client.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("failed to send request: %v", err)
+		return resp, fmt.Errorf("failed to send request: %v", err)
 	}
 	defer resp.Body.Close()
 
 	b, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read response body: %v", err)
+		return resp, fmt.Errorf("failed to read response body: %v", err)
 	}
 	resp.Body = ioutil.NopCloser(bytes.NewBuffer(b))
 
@@ -160,13 +160,13 @@ func (c *Connection) send(method, path string, header http.Header, payload, resp
 				msg += fmt.Sprintf(", errorMessage=%s", errBody.ErrorMessage)
 			}
 			msg += fmt.Sprintf(", method=%s, url=%s", method, url)
-			return nil, errors.New(msg)
+			return resp, errors.New(msg)
 		}
 
 		if respBody != nil {
 			err = json.Unmarshal(b, respBody)
 			if err != nil {
-				return nil, fmt.Errorf("failed to decode response body: %v", err)
+				return resp, fmt.Errorf("failed to decode response body: %v", err)
 			}
 		}
 	}
@@ -176,7 +176,7 @@ func (c *Connection) send(method, path string, header http.Header, payload, resp
 		if len(b) > 0 {
 			bodyStr = string(b)
 		}
-		return nil, HTTPError{
+		return resp, HTTPError{
 			error:      fmt.Errorf("http status error:%s, body:%s", resp.Status, bodyStr),
 			StatusCode: s,
 		}
