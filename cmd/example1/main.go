@@ -155,12 +155,20 @@ func run(username, password string) (err error) {
 	}
 
 	replaceDocBody := map[string]interface{}{"Hello": "you"}
-	r, rc, err := c.ReplaceDocument(dbName, doc.ID, replaceDocBody, nil, nil, nil)
+	resplaceDocumentRes, rc, err := c.ReplaceDocument(dbName, doc.ID, replaceDocBody, nil, nil, nil)
 	if err != nil {
 		log.Printf("err=%v", err)
 		return err
 	}
-	log.Printf("ReplaceDocument. r=%v, rc=%v", r, rc)
+	log.Printf("ReplaceDocument. res=%v, rc=%v", resplaceDocumentRes, rc)
+
+	updateDocBody := map[string]interface{}{"Hello": "world"}
+	updateDocumentRes, rc, err := c.UpdateDocument(dbName, doc.ID, updateDocBody, nil, nil, nil)
+	if err != nil {
+		log.Printf("err=%v", err)
+		return err
+	}
+	log.Printf("UpdateDocument. res=%v, rc=%v", updateDocumentRes, rc)
 
 	var docBody3 struct {
 		ID   string `json:"_id"`
@@ -168,7 +176,7 @@ func run(username, password string) (err error) {
 		Rev  string `json:"_rev"`
 		Name string `json:"name"`
 	}
-	doc, rc, err = c.RemoveDocument(dbName, collName, doc.Key, &ara.RemoveDocumentConfig{IfMatch: r.Rev, ReturnOld: ara.TruePtr()}, &docBody3)
+	doc, rc, err = c.RemoveDocument(dbName, collName, doc.Key, &ara.RemoveDocumentConfig{IfMatch: updateDocumentRes.Rev, ReturnOld: ara.TruePtr()}, &docBody3)
 	if err != nil {
 		log.Printf("err=%v", err)
 		return err
