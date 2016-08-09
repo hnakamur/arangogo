@@ -40,13 +40,12 @@ func (c *Connection) CreateEdge(dbName, graphName, collName string, data interfa
 
 	var body struct {
 		Edge CreateEdgeResult `json:"edge"`
-		Code int              `json:"code"`
 	}
-	_, err = c.send(http.MethodPost, path, nil, data, &body)
+	rc, _, err = c.send(http.MethodPost, path, nil, data, &body)
 	if err != nil {
-		return body.Edge, 0, fmt.Errorf("failed to create edge: %v", err)
+		return body.Edge, rc, fmt.Errorf("failed to create edge: %v", err)
 	}
-	return body.Edge, body.Code, nil
+	return body.Edge, rc, nil
 }
 
 type GetEdgeConfig struct {
@@ -76,16 +75,15 @@ func (c *Connection) GetEdge(dbName, graphName, collName, edgeKey string, config
 
 	var body struct {
 		Edge interface{} `json:"edge"`
-		Code int         `json:"code"`
 	}
 	if edgePtr != nil {
 		body.Edge = edgePtr
 	}
-	_, err = c.send(http.MethodGet, path, config.header(), nil, &body)
+	rc, _, err = c.send(http.MethodGet, path, config.header(), nil, &body)
 	if err != nil {
-		return 0, fmt.Errorf("failed to get edge: %v", err)
+		return rc, fmt.Errorf("failed to get edge: %v", err)
 	}
-	return body.Code, nil
+	return rc, nil
 }
 
 type ModifyEdgeResult struct {
@@ -129,13 +127,12 @@ func (c *Connection) ModifyEdge(dbName, graphName, collName, edgeKey string, dat
 
 	var body struct {
 		Edge ModifyEdgeResult `json:"edge"`
-		Code int              `json:"code"`
 	}
-	_, err = c.send(http.MethodPatch, path, nil, data, &body)
+	rc, _, err = c.send(http.MethodPatch, path, nil, data, &body)
 	if err != nil {
-		return body.Edge, 0, fmt.Errorf("failed to modify edge: %v", err)
+		return body.Edge, rc, fmt.Errorf("failed to modify edge: %v", err)
 	}
-	return body.Edge, body.Code, nil
+	return body.Edge, rc, nil
 }
 
 type ReplaceEdgeResult struct {
@@ -187,13 +184,12 @@ func (c *Connection) ReplaceEdge(dbName, graphName, collName, edgeKey string, da
 
 	var body struct {
 		Edge ReplaceEdgeResult `json:"edge"`
-		Code int               `json:"code"`
 	}
-	_, err = c.send(http.MethodPut, path, config.header(), data, &body)
+	rc, _, err = c.send(http.MethodPut, path, config.header(), data, &body)
 	if err != nil {
-		return body.Edge, 0, fmt.Errorf("failed to replace edge: %v", err)
+		return body.Edge, rc, fmt.Errorf("failed to replace edge: %v", err)
 	}
-	return body.Edge, body.Code, nil
+	return body.Edge, rc, nil
 }
 
 type RemoveEdgeConfig struct {
@@ -238,11 +234,10 @@ func (c *Connection) RemoveEdge(dbName, graphName, collName, edgeKey string, con
 
 	var body struct {
 		Removed bool `json:"removed"`
-		Code    int  `json:"code"`
 	}
-	_, err = c.send(http.MethodDelete, path, config.header(), nil, &body)
+	rc, _, err = c.send(http.MethodDelete, path, config.header(), nil, &body)
 	if err != nil {
-		return body.Removed, 0, fmt.Errorf("failed to remove edge: %v", err)
+		return body.Removed, rc, fmt.Errorf("failed to remove edge: %v", err)
 	}
-	return body.Removed, body.Code, nil
+	return body.Removed, rc, nil
 }

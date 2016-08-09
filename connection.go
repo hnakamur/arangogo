@@ -73,21 +73,21 @@ type HTTPError struct {
 	StatusCode int
 }
 
-func (c *Connection) send(method, path string, header http.Header, payload, respBody interface{}) (*http.Response, error) {
+func (c *Connection) send(method, path string, header http.Header, payload, respBody interface{}) (rc int, resp *http.Response, err error) {
 	var reader io.Reader
 	var payloadBytes []byte
 	if payload != nil {
 		var err error
 		payloadBytes, err = json.Marshal(payload)
 		if err != nil {
-			return nil, fmt.Errorf("failed to encode request payload: %v", err)
+			return 0, nil, fmt.Errorf("failed to encode request payload: %v", err)
 		}
 		reader = bytes.NewBuffer(payloadBytes)
 	}
 	url := c.url + path
 	req, err := http.NewRequest(method, url, reader)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %v", err)
+		return 0, nil, fmt.Errorf("failed to create request: %v", err)
 	}
 	if c.header != nil {
 		req.Header = c.header
@@ -107,17 +107,17 @@ func (c *Connection) send(method, path string, header http.Header, payload, resp
 		req.SetBasicAuth(c.username, c.password)
 	}
 
-	resp, err := c.client.Do(req)
+	resp, err = c.client.Do(req)
 	if err != nil {
-		return resp, fmt.Errorf("failed to send request: %v", err)
+		return 0, resp, fmt.Errorf("failed to send request: %v", err)
 	}
 	defer resp.Body.Close()
 
+	rc = resp.StatusCode
 	b, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return resp, fmt.Errorf("failed to read response body: %v", err)
+		return rc, resp, fmt.Errorf("failed to read response body: %v", err)
 	}
-	resp.Body = ioutil.NopCloser(bytes.NewBuffer(b))
 
 	if c.logger != nil {
 		var reqH []byte
@@ -160,13 +160,13 @@ func (c *Connection) send(method, path string, header http.Header, payload, resp
 				msg += fmt.Sprintf(", errorMessage=%s", errBody.ErrorMessage)
 			}
 			msg += fmt.Sprintf(", method=%s, url=%s", method, url)
-			return resp, errors.New(msg)
+			return rc, resp, errors.New(msg)
 		}
 
 		if respBody != nil {
 			err = json.Unmarshal(b, respBody)
 			if err != nil {
-				return resp, fmt.Errorf("failed to decode response body: %v", err)
+				return rc, resp, fmt.Errorf("failed to decode response body: %v", err)
 			}
 		}
 	}
@@ -176,13 +176,13 @@ func (c *Connection) send(method, path string, header http.Header, payload, resp
 		if len(b) > 0 {
 			bodyStr = string(b)
 		}
-		return resp, HTTPError{
+		return rc, resp, HTTPError{
 			error:      fmt.Errorf("http status error:%s, body:%s", resp.Status, bodyStr),
 			StatusCode: s,
 		}
 	}
 
-	return resp, nil
+	return rc, resp, nil
 }
 
 type pathConfig struct {

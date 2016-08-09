@@ -28,13 +28,13 @@ type CreateCollectionConfig struct {
 }
 
 type CreateCollectionResult struct {
-	ID          string
-	Name        string
-	WaitForSync bool
-	IsVolatile  bool
-	IsSystem    bool
-	Status      int
-	Type        int
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	WaitForSync bool   `json:"waitForSync"`
+	IsVolatile  bool   `json:"isVolatile"`
+	IsSystem    bool   `json:"isSystem"`
+	Status      int    `json:"status"`
+	Type        int    `json:"type"`
 }
 
 func (c *Connection) CreateCollection(dbName string, config CreateCollectionConfig) (r CreateCollectionResult, rc int, err error) {
@@ -43,34 +43,15 @@ func (c *Connection) CreateCollection(dbName string, config CreateCollectionConf
 		pathFormat: "/_api/collection",
 	})
 
-	var body struct {
-		ID          string `json:"id"`
-		Name        string `json:"name"`
-		WaitForSync bool   `json:"waitForSync"`
-		IsVolatile  bool   `json:"isVolatile"`
-		IsSystem    bool   `json:"isSystem"`
-		Status      int    `json:"status"`
-		Type        int    `json:"type"`
-		Code        int    `json:"code"`
-	}
-	_, err = c.send(http.MethodPost, path, nil, config, &body)
+	rc, _, err = c.send(http.MethodPost, path, nil, config, &r)
 	if err != nil {
-		return r, body.Code, fmt.Errorf("failed to create collection: %v", err)
+		return r, rc, fmt.Errorf("failed to create collection: %v", err)
 	}
-	r = CreateCollectionResult{
-		ID:          body.ID,
-		Name:        body.Name,
-		WaitForSync: body.WaitForSync,
-		IsVolatile:  body.IsVolatile,
-		IsSystem:    body.IsSystem,
-		Status:      body.Status,
-		Type:        body.Type,
-	}
-	return r, body.Code, nil
+	return r, rc, nil
 }
 
 type DropCollectionResult struct {
-	ID string
+	ID string `json:"id"`
 }
 
 func (c *Connection) DropCollection(dbName, collectionName string) (r DropCollectionResult, rc int, err error) {
@@ -80,18 +61,11 @@ func (c *Connection) DropCollection(dbName, collectionName string) (r DropCollec
 		pathParams: []interface{}{collectionName},
 	})
 
-	var body struct {
-		ID   string `json:"id"`
-		Code int    `json:"code"`
-	}
-	_, err = c.send(http.MethodDelete, path, nil, nil, &body)
+	rc, _, err = c.send(http.MethodDelete, path, nil, nil, &r)
 	if err != nil {
-		return r, body.Code, fmt.Errorf("failed to drop collection: %v", err)
+		return r, rc, fmt.Errorf("failed to drop collection: %v", err)
 	}
-	r = DropCollectionResult{
-		ID: body.ID,
-	}
-	return r, body.Code, nil
+	return r, rc, nil
 }
 
 func (c *Connection) ListCollections(dbName string) (r []Collection, rc int, err error) {
@@ -100,15 +74,14 @@ func (c *Connection) ListCollections(dbName string) (r []Collection, rc int, err
 		pathFormat: "/_api/collection",
 	})
 
-	body := new(struct {
+	var body struct {
 		Result []Collection `json:"result"`
-		Code   int          `json:"code"`
-	})
-	_, err = c.send(http.MethodGet, path, nil, nil, body)
-	if err != nil {
-		return nil, body.Code, fmt.Errorf("failed to list collections: %v", err)
 	}
-	return body.Result, body.Code, nil
+	rc, _, err = c.send(http.MethodGet, path, nil, nil, body)
+	if err != nil {
+		return nil, rc, fmt.Errorf("failed to list collections: %v", err)
+	}
+	return body.Result, rc, nil
 }
 
 func (c *Connection) TruncateCollection(dbName, collectionName string) (r Collection, rc int, err error) {
@@ -118,24 +91,9 @@ func (c *Connection) TruncateCollection(dbName, collectionName string) (r Collec
 		pathParams: []interface{}{collectionName},
 	})
 
-	var body struct {
-		ID       string `json:"id"`
-		Name     string `json:"name"`
-		IsSystem bool   `json:"isSystem"`
-		Status   int    `json:"status"`
-		Type     int    `json:"type"`
-		Code     int    `json:"code"`
-	}
-	_, err = c.send(http.MethodPut, path, nil, nil, &body)
+	rc, _, err = c.send(http.MethodPut, path, nil, nil, &r)
 	if err != nil {
-		return r, body.Code, fmt.Errorf("failed to truncate collection: %v", err)
+		return r, rc, fmt.Errorf("failed to truncate collection: %v", err)
 	}
-	r = Collection{
-		ID:       body.ID,
-		Name:     body.Name,
-		IsSystem: body.IsSystem,
-		Status:   body.Status,
-		Type:     body.Type,
-	}
-	return r, body.Code, nil
+	return r, rc, nil
 }

@@ -40,13 +40,12 @@ func (c *Connection) CreateVertex(dbName, graphName, collName string, data inter
 
 	var body struct {
 		Vertex CreateVertexResult `json:"vertex"`
-		Code   int                `json:"code"`
 	}
-	_, err = c.send(http.MethodPost, path, nil, data, &body)
+	rc, _, err = c.send(http.MethodPost, path, nil, data, &body)
 	if err != nil {
-		return body.Vertex, 0, fmt.Errorf("failed to create vertex: %v", err)
+		return body.Vertex, rc, fmt.Errorf("failed to create vertex: %v", err)
 	}
-	return body.Vertex, body.Code, nil
+	return body.Vertex, rc, nil
 }
 
 type GetVertexConfig struct {
@@ -76,16 +75,15 @@ func (c *Connection) GetVertex(dbName, graphName, collName, vertexKey string, co
 
 	var body struct {
 		Vertex interface{} `json:"vertex"`
-		Code   int         `json:"code"`
 	}
 	if vertexPtr != nil {
 		body.Vertex = vertexPtr
 	}
-	_, err = c.send(http.MethodGet, path, config.header(), nil, &body)
+	rc, _, err = c.send(http.MethodGet, path, config.header(), nil, &body)
 	if err != nil {
-		return 0, fmt.Errorf("failed to get vertex: %v", err)
+		return rc, fmt.Errorf("failed to get vertex: %v", err)
 	}
-	return body.Code, nil
+	return rc, nil
 }
 
 type ModifyVertexResult struct {
@@ -143,13 +141,12 @@ func (c *Connection) ModifyVertex(dbName, graphName, collName, vertexKey string,
 
 	var body struct {
 		Vertex ModifyVertexResult `json:"vertex"`
-		Code   int                `json:"code"`
 	}
-	_, err = c.send(http.MethodPatch, path, config.header(), data, &body)
+	rc, _, err = c.send(http.MethodPatch, path, config.header(), data, &body)
 	if err != nil {
-		return body.Vertex, 0, fmt.Errorf("failed to modify vertex: %v", err)
+		return body.Vertex, rc, fmt.Errorf("failed to modify vertex: %v", err)
 	}
-	return body.Vertex, body.Code, nil
+	return body.Vertex, rc, nil
 }
 
 type ReplaceVertexResult struct {
@@ -201,13 +198,12 @@ func (c *Connection) ReplaceVertex(dbName, graphName, collName, vertexKey string
 
 	var body struct {
 		Vertex ReplaceVertexResult `json:"vertex"`
-		Code   int                 `json:"code"`
 	}
-	_, err = c.send(http.MethodPut, path, config.header(), data, &body)
+	rc, _, err = c.send(http.MethodPut, path, config.header(), data, &body)
 	if err != nil {
-		return body.Vertex, 0, fmt.Errorf("failed to replace vertex: %v", err)
+		return body.Vertex, rc, fmt.Errorf("failed to replace vertex: %v", err)
 	}
-	return body.Vertex, body.Code, nil
+	return body.Vertex, rc, nil
 }
 
 type RemoveVertexConfig struct {
@@ -252,11 +248,10 @@ func (c *Connection) RemoveVertex(dbName, graphName, collName, vertexKey string,
 
 	var body struct {
 		Removed bool `json:"removed"`
-		Code    int  `json:"code"`
 	}
-	_, err = c.send(http.MethodDelete, path, config.header(), nil, &body)
+	rc, _, err = c.send(http.MethodDelete, path, config.header(), nil, &body)
 	if err != nil {
-		return body.Removed, 0, fmt.Errorf("failed to remove vertex: %v", err)
+		return body.Removed, rc, fmt.Errorf("failed to remove vertex: %v", err)
 	}
-	return body.Removed, body.Code, nil
+	return body.Removed, rc, nil
 }

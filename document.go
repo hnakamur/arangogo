@@ -36,11 +36,11 @@ func (c *Connection) ReadDocument(dbName, documentHandle string, config *ReadDoc
 		pathParams: []interface{}{documentHandle},
 	})
 
-	resp, err := c.send(http.MethodGet, path, config.header(), nil, &documentPtr)
+	rc, _, err = c.send(http.MethodGet, path, config.header(), nil, &documentPtr)
 	if err != nil {
-		return resp.StatusCode, fmt.Errorf("failed to read document: %v", err)
+		return rc, fmt.Errorf("failed to read document: %v", err)
 	}
-	return resp.StatusCode, nil
+	return rc, nil
 }
 
 type ReadDocumentHeaderConfig struct {
@@ -72,12 +72,12 @@ func (c *Connection) ReadDocumentHeader(dbName, documentHandle string, config *R
 		pathParams: []interface{}{documentHandle},
 	})
 
-	resp, err := c.send(http.MethodHead, path, config.header(), nil, nil)
+	rc, resp, err := c.send(http.MethodHead, path, config.header(), nil, nil)
 	rev = resp.Header.Get("ETag")
 	if err != nil {
-		return rev, resp.StatusCode, fmt.Errorf("failed to read document header: %v", err)
+		return rev, rc, fmt.Errorf("failed to read document header: %v", err)
 	}
-	return rev, resp.StatusCode, nil
+	return rev, rc, nil
 }
 
 const (
@@ -115,10 +115,7 @@ func (c *Connection) ListAllDocuments(dbName string, config ListAllDocumentsConf
 		pathFormat: "/_api/simple/all-keys",
 	})
 
-	resp, err := c.send(http.MethodPut, path, nil, config, &r)
-	if resp != nil {
-		rc = resp.StatusCode
-	}
+	rc, _, err = c.send(http.MethodPut, path, nil, config, &r)
 	if err != nil {
 		err = fmt.Errorf("failed to list all documents: %v", err)
 	}
@@ -171,16 +168,16 @@ func (c *Connection) CreateDocument(dbName, collName string, data interface{}, c
 	if docPtr != nil {
 		body.New = docPtr
 	}
-	resp, err := c.send(http.MethodPost, path, nil, data, &body)
+	rc, _, err = c.send(http.MethodPost, path, nil, data, &body)
 	if err != nil {
-		return doc, resp.StatusCode, fmt.Errorf("failed to create document: %v", err)
+		return doc, rc, fmt.Errorf("failed to create document: %v", err)
 	}
 	doc = Document{
 		ID:  body.ID,
 		Key: body.Key,
 		Rev: body.Rev,
 	}
-	return doc, resp.StatusCode, nil
+	return doc, rc, nil
 }
 
 type CreateDocumentsConfig struct {
@@ -208,12 +205,11 @@ func (c *Connection) CreateDocuments(dbName, collName string, data interface{}, 
 		queryParams: config.queryParams(),
 	})
 
-	var body []Document
-	resp, err := c.send(http.MethodPost, path, nil, data, &body)
+	rc, _, err = c.send(http.MethodPost, path, nil, data, &docs)
 	if err != nil {
-		return nil, resp.StatusCode, fmt.Errorf("failed to create documents: %v", err)
+		return nil, rc, fmt.Errorf("failed to create documents: %v", err)
 	}
-	return body, resp.StatusCode, nil
+	return docs, rc, nil
 }
 
 type RemoveDocumentConfig struct {
@@ -271,14 +267,14 @@ func (c *Connection) RemoveDocument(dbName, collName, key string, config *Remove
 	if docPtr != nil {
 		body.Old = docPtr
 	}
-	resp, err := c.send(http.MethodDelete, path, config.header(), nil, &body)
+	rc, _, err = c.send(http.MethodDelete, path, config.header(), nil, &body)
 	if err != nil {
-		return doc, resp.StatusCode, fmt.Errorf("failed to remove document: %v", err)
+		return doc, rc, fmt.Errorf("failed to remove document: %v", err)
 	}
 	doc = Document{
 		ID:  body.ID,
 		Key: body.Key,
 		Rev: body.Rev,
 	}
-	return doc, resp.StatusCode, nil
+	return doc, rc, nil
 }

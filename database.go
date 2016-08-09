@@ -21,7 +21,7 @@ type CreateDatabaseConfig struct {
 }
 
 func (c *Connection) CreateDatabase(config CreateDatabaseConfig) error {
-	_, err := c.send(http.MethodPost, "/_api/database", nil, config, nil)
+	_, _, err := c.send(http.MethodPost, "/_api/database", nil, config, nil)
 	if err != nil {
 		return fmt.Errorf("failed to create database: %v", err)
 	}
@@ -29,7 +29,7 @@ func (c *Connection) CreateDatabase(config CreateDatabaseConfig) error {
 }
 
 func (c *Connection) DropDatabase(name string) error {
-	_, err := c.send(http.MethodDelete, "/_api/database/"+name, nil, nil, nil)
+	_, _, err := c.send(http.MethodDelete, "/_api/database/"+name, nil, nil, nil)
 	if err != nil {
 		return fmt.Errorf("failed to delete database: %v", err)
 	}
@@ -40,7 +40,7 @@ func (c *Connection) ListDatabases() ([]string, error) {
 	var body struct {
 		Result []string `json:"result"`
 	}
-	_, err := c.send(http.MethodGet, "/_api/database", nil, nil, &body)
+	_, _, err := c.send(http.MethodGet, "/_api/database", nil, nil, &body)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get database list: %v", err)
 	}
@@ -51,7 +51,7 @@ func (c *Connection) ListUserDatabases() ([]string, error) {
 	var body struct {
 		Result []string `json:"result"`
 	}
-	_, err := c.send(http.MethodGet, "/_api/database/user", nil, nil, &body)
+	_, _, err := c.send(http.MethodGet, "/_api/database/user", nil, nil, &body)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get user database list: %v", err)
 	}

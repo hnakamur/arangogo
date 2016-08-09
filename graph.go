@@ -15,16 +15,15 @@ func (c *Connection) ListGraphs(dbName string, graphsPtr interface{}) (rc int, e
 
 	var body struct {
 		Graphs interface{} `json:"graphs"`
-		Code   int         `json:"code"`
 	}
 	if graphsPtr != nil {
 		body.Graphs = graphsPtr
 	}
-	_, err = c.send(http.MethodGet, path, nil, nil, &body)
+	rc, _, err = c.send(http.MethodGet, path, nil, nil, &body)
 	if err != nil {
-		return 0, fmt.Errorf("failed to list graphs: %v", err)
+		return rc, fmt.Errorf("failed to list graphs: %v", err)
 	}
-	return body.Code, nil
+	return rc, nil
 }
 
 type EdgeDefinition struct {
@@ -55,13 +54,12 @@ func (c *Connection) CreateGraph(dbName string, data interface{}) (r CreateGraph
 
 	var body struct {
 		Graph CreateGraphResult `json:"graph"`
-		Code  int               `json:"code"`
 	}
-	_, err = c.send(http.MethodPost, path, nil, data, &body)
+	rc, _, err = c.send(http.MethodPost, path, nil, data, &body)
 	if err != nil {
-		return body.Graph, body.Code, fmt.Errorf("failed to create graph: %v", err)
+		return body.Graph, rc, fmt.Errorf("failed to create graph: %v", err)
 	}
-	return body.Graph, body.Code, nil
+	return body.Graph, rc, nil
 }
 
 type DropGraphConfig struct {
@@ -99,13 +97,12 @@ func (c *Connection) DropGraph(dbName, graphName string, config *DropGraphConfig
 
 	var body struct {
 		Removed bool `json:"removed"`
-		Code    int  `json:"code"`
 	}
-	_, err = c.send(http.MethodDelete, path, nil, nil, &body)
+	rc, _, err = c.send(http.MethodDelete, path, nil, nil, &body)
 	if err != nil {
-		return body.Removed, body.Code, fmt.Errorf("failed to drop edge: %v", err)
+		return body.Removed, rc, fmt.Errorf("failed to drop edge: %v", err)
 	}
-	return body.Removed, body.Code, nil
+	return body.Removed, rc, nil
 }
 
 func (c *Connection) ListVertexCollections(dbName, graphName string) (collections []string, rc int, err error) {
@@ -117,13 +114,12 @@ func (c *Connection) ListVertexCollections(dbName, graphName string) (collection
 
 	var body struct {
 		Collections []string `json:"collections"`
-		Code        int      `json:"code"`
 	}
-	_, err = c.send(http.MethodGet, path, nil, nil, &body)
+	rc, _, err = c.send(http.MethodGet, path, nil, nil, &body)
 	if err != nil {
-		return nil, body.Code, fmt.Errorf("failed to list vertex collections: %v", err)
+		return nil, rc, fmt.Errorf("failed to list vertex collections: %v", err)
 	}
-	return body.Collections, body.Code, nil
+	return body.Collections, rc, nil
 }
 
 type AddVertexCollectionResult struct {
@@ -166,13 +162,12 @@ func (c *Connection) AddVertexCollection(dbName, graphName, collectionName strin
 	}
 	var body struct {
 		Graph AddVertexCollectionResult `json:"graph"`
-		Code  int                       `json:"code"`
 	}
-	_, err = c.send(http.MethodPost, path, nil, payload, &body)
+	rc, _, err = c.send(http.MethodPost, path, nil, payload, &body)
 	if err != nil {
-		return body.Graph, body.Code, fmt.Errorf("failed to add vertex collections: %v", err)
+		return body.Graph, rc, fmt.Errorf("failed to add vertex collections: %v", err)
 	}
-	return body.Graph, body.Code, nil
+	return body.Graph, rc, nil
 }
 
 type RemoveVertexCollectionResult struct {
@@ -210,13 +205,12 @@ func (c *Connection) RemoveVertexCollection(dbName, graphName, collectionName st
 
 	var body struct {
 		Graph RemoveVertexCollectionResult `json:"graph"`
-		Code  int                          `json:"code"`
 	}
-	_, err = c.send(http.MethodDelete, path, nil, nil, &body)
+	rc, _, err = c.send(http.MethodDelete, path, nil, nil, &body)
 	if err != nil {
-		return body.Graph, body.Code, fmt.Errorf("failed to remove vertex collections: %v", err)
+		return body.Graph, rc, fmt.Errorf("failed to remove vertex collections: %v", err)
 	}
-	return body.Graph, body.Code, nil
+	return body.Graph, rc, nil
 }
 
 func (c *Connection) ListEdgeDefinitions(dbName, graphName string) (collections []string, rc int, err error) {
@@ -228,13 +222,12 @@ func (c *Connection) ListEdgeDefinitions(dbName, graphName string) (collections 
 
 	var body struct {
 		Collections []string `json:"collections"`
-		Code        int      `json:"code"`
 	}
-	_, err = c.send(http.MethodGet, path, nil, nil, &body)
+	rc, _, err = c.send(http.MethodGet, path, nil, nil, &body)
 	if err != nil {
-		return nil, body.Code, fmt.Errorf("failed to list edge definitions: %v", err)
+		return nil, rc, fmt.Errorf("failed to list edge definitions: %v", err)
 	}
-	return body.Collections, body.Code, nil
+	return body.Collections, rc, nil
 }
 
 type AddEdgeDefinitionResult struct {
@@ -256,11 +249,11 @@ func (c *Connection) AddEdgeDefinition(dbName, graphName string, edgeDefinition 
 		Graph AddEdgeDefinitionResult `json:"graph"`
 		Code  int                     `json:"code"`
 	}
-	_, err = c.send(http.MethodPost, path, nil, edgeDefinition, &body)
+	rc, _, err = c.send(http.MethodPost, path, nil, edgeDefinition, &body)
 	if err != nil {
-		return body.Graph, body.Code, fmt.Errorf("failed to add edge definition: %v", err)
+		return body.Graph, rc, fmt.Errorf("failed to add edge definition: %v", err)
 	}
-	return body.Graph, body.Code, nil
+	return body.Graph, rc, nil
 }
 
 type RemoveEdgeDefinitionResult struct {
@@ -282,9 +275,9 @@ func (c *Connection) RemoveEdgeDefinition(dbName, graphName, definitionName stri
 		Graph RemoveEdgeDefinitionResult `json:"graph"`
 		Code  int                        `json:"code"`
 	}
-	_, err = c.send(http.MethodDelete, path, nil, nil, &body)
+	rc, _, err = c.send(http.MethodDelete, path, nil, nil, &body)
 	if err != nil {
-		return body.Graph, body.Code, fmt.Errorf("failed to remove edge definition: %v", err)
+		return body.Graph, rc, fmt.Errorf("failed to remove edge definition: %v", err)
 	}
-	return body.Graph, body.Code, nil
+	return body.Graph, rc, nil
 }
