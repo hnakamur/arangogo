@@ -54,14 +54,17 @@ func run(username, password string) (err error) {
 		}
 	}
 	defer func() {
-		err = c.DropDatabase(dbName)
-		if err != nil {
+		log.Printf("=============== defer start ================")
+		defer log.Printf("=============== defer exit ================")
+
+		err2 := c.DropDatabase(dbName)
+		if err2 != nil {
 			return
 		}
 
 		var userDatabases []string
-		userDatabases, err = c.ListUserDatabases()
-		if err != nil {
+		userDatabases, err2 = c.ListUserDatabases()
+		if err2 != nil {
 			return
 		}
 		log.Printf("userDatabases=%v", userDatabases)
@@ -151,13 +154,21 @@ func run(username, password string) (err error) {
 		// NOTE: This is an intentional error, so let's continue
 	}
 
+	replaceDocBody := map[string]interface{}{"Hello": "you"}
+	r, rc, err := c.ReplaceDocument(dbName, doc.ID, replaceDocBody, nil, nil, nil)
+	if err != nil {
+		log.Printf("err=%v", err)
+		return err
+	}
+	log.Printf("ReplaceDocument. r=%v, rc=%v", r, rc)
+
 	var docBody3 struct {
 		ID   string `json:"_id"`
 		Key  string `json:"_key"`
 		Rev  string `json:"_rev"`
 		Name string `json:"name"`
 	}
-	doc, rc, err = c.RemoveDocument(dbName, collName, doc.Key, &ara.RemoveDocumentConfig{IfMatch: doc.Rev, ReturnOld: ara.TruePtr()}, &docBody3)
+	doc, rc, err = c.RemoveDocument(dbName, collName, doc.Key, &ara.RemoveDocumentConfig{IfMatch: r.Rev, ReturnOld: ara.TruePtr()}, &docBody3)
 	if err != nil {
 		log.Printf("err=%v", err)
 		return err

@@ -77,7 +77,7 @@ func (c *Connection) ListCollections(dbName string) (r []Collection, rc int, err
 	var body struct {
 		Result []Collection `json:"result"`
 	}
-	rc, _, err = c.send(http.MethodGet, path, nil, nil, body)
+	rc, _, err = c.send(http.MethodGet, path, nil, nil, &body)
 	if err != nil {
 		return nil, rc, fmt.Errorf("failed to list collections: %v", err)
 	}

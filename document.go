@@ -212,6 +212,94 @@ func (c *Connection) CreateDocuments(dbName, collName string, data interface{}, 
 	return docs, rc, nil
 }
 
+type ReplaceDocumentConfig struct {
+	WaitForSync *bool
+	IgnoreRevs  *bool
+	ReturnOld   *bool
+	ReturnNew   *bool
+	IfMatch     string
+}
+
+func (c *ReplaceDocumentConfig) header() http.Header {
+	if c == nil {
+		return nil
+	}
+	var header http.Header
+	if c.IfMatch != "" {
+		header = make(http.Header)
+		header.Set("if-match", c.IfMatch)
+		return header
+	}
+
+	return nil
+}
+
+func (c *ReplaceDocumentConfig) queryParams() url.Values {
+	if c == nil {
+		return nil
+	}
+
+	var params url.Values
+	if c.WaitForSync != nil || c.IgnoreRevs != nil || c.ReturnOld != nil || c.ReturnNew != nil {
+		params = make(url.Values)
+	}
+	if c.WaitForSync != nil {
+		params.Set("waitForSync", strconv.FormatBool(*c.WaitForSync))
+	}
+	if c.IgnoreRevs != nil {
+		params.Set("ignoreRevs", strconv.FormatBool(*c.IgnoreRevs))
+	}
+	if c.ReturnOld != nil {
+		params.Set("returnOld", strconv.FormatBool(*c.ReturnOld))
+	}
+	if c.ReturnNew != nil {
+		params.Set("returnNew", strconv.FormatBool(*c.ReturnNew))
+	}
+	return params
+}
+
+type ReplaceDocumentResult struct {
+	ID     string `json:"_id"`
+	Key    string `json:"_key"`
+	Rev    string `json:"_rev"`
+	OldRev string `json:"_oldRev"`
+}
+
+func (c *Connection) ReplaceDocument(dbName, docHandle string, data interface{}, config *ReplaceDocumentConfig, oldDocPtr, newDocPtr interface{}) (r ReplaceDocumentResult, rc int, err error) {
+	path := buildPath(pathConfig{
+		dbName:      dbName,
+		pathFormat:  "/_api/document/%s",
+		pathParams:  []interface{}{docHandle},
+		queryParams: config.queryParams(),
+	})
+
+	var body struct {
+		ID     string      `json:"_id"`
+		Key    string      `json:"_key"`
+		Rev    string      `json:"_rev"`
+		OldRev string      `json:"_oldRev"`
+		Old    interface{} `json:"old"`
+		New    interface{} `json:"new"`
+	}
+	if oldDocPtr != nil {
+		body.Old = oldDocPtr
+	}
+	if newDocPtr != nil {
+		body.New = newDocPtr
+	}
+	rc, _, err = c.send(http.MethodPut, path, config.header(), data, &body)
+	if err != nil {
+		return r, rc, fmt.Errorf("failed to replace document: %v", err)
+	}
+	r = ReplaceDocumentResult{
+		ID:     body.ID,
+		Key:    body.Key,
+		Rev:    body.Rev,
+		OldRev: body.OldRev,
+	}
+	return r, rc, nil
+}
+
 type RemoveDocumentConfig struct {
 	WaitForSync *bool
 	ReturnOld   *bool
