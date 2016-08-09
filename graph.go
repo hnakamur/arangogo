@@ -38,7 +38,7 @@ type CreateGraphConfig struct {
 	OrphanCollections []string         `json:"orphanCollections",omitempty`
 }
 
-type CreateGraphResult struct {
+type Graph struct {
 	Name              string           `json:"name"`
 	EdgeDefinitions   []EdgeDefinition `json:"edgeDefinitions",omitempty`
 	OrphanCollections []string         `json:"orphanCollections",omitempty`
@@ -46,18 +46,35 @@ type CreateGraphResult struct {
 	Rev               string           `json:"_rev"`
 }
 
-func (c *Connection) CreateGraph(dbName string, data interface{}) (r CreateGraphResult, rc int, err error) {
+func (c *Connection) CreateGraph(dbName string, data interface{}) (g Graph, rc int, err error) {
 	path := buildPath(pathConfig{
 		dbName:     dbName,
 		pathFormat: "/_api/gharial",
 	})
 
 	var body struct {
-		Graph CreateGraphResult `json:"graph"`
+		Graph Graph `json:"graph"`
 	}
 	rc, _, err = c.send(http.MethodPost, path, nil, data, &body)
 	if err != nil {
 		return body.Graph, rc, fmt.Errorf("failed to create graph: %v", err)
+	}
+	return body.Graph, rc, nil
+}
+
+func (c *Connection) GetGraph(dbName, graphName string) (g Graph, rc int, err error) {
+	path := buildPath(pathConfig{
+		dbName:     dbName,
+		pathFormat: "/_api/gharial/%s",
+		pathParams: []interface{}{graphName},
+	})
+
+	var body struct {
+		Graph Graph `json:"graph"`
+	}
+	rc, _, err = c.send(http.MethodGet, path, nil, nil, &body)
+	if err != nil {
+		return body.Graph, rc, fmt.Errorf("failed to get graph: %v", err)
 	}
 	return body.Graph, rc, nil
 }
